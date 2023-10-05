@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketException;
 
 import mensajesSIP.InviteMessage;
+import mensajesSIP.RegisterMessage;
 import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
@@ -36,6 +37,10 @@ public class ProxyTransactionLayer {
 
 	public void echoInvite(InviteMessage inviteMessage, String address, int port) throws IOException {
 		transportLayer.send(inviteMessage, address, port);
+	}
+	/*DONE*/
+	public void echoRegister(RegisterMessage registerMessage, String address, int port) throws IOException {
+		transportLayer.send(registerMessage, address, port);
 	}
 
 	public void startListening() {

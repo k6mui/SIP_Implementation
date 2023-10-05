@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import common.FindMyIPv4;
 import mensajesSIP.InviteMessage;
+import mensajesSIP.RegisterMessage;
 import mensajesSIP.SDPMessage;
 
 public class UaUserLayer {
@@ -39,6 +40,7 @@ public class UaUserLayer {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
 		runVitextServer();
 	}
+	
 
 	public void startListeningNetwork() {
 		transactionLayer.startListeningNetwork();
