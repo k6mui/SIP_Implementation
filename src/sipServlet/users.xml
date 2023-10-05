@@ -1,0 +1,8 @@
+<users>
+	<user id="sip:mario@it.uc3m.es">
+		<Servlet-class name="example.sip.MarioSIPServlet" />
+	</user>
+	<user id="sip:fsedano@it.uc3m.es">
+		<Servlet-class name="example.sip.JaviSIPServlet" />
+	</user>
+</users>
