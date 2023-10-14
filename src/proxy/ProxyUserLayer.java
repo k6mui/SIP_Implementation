@@ -49,7 +49,30 @@ public class ProxyUserLayer {
 		String originAddress = originParts[0];
 		int originPort = Integer.parseInt(originParts[1]);
 		
-		/*Crear el OK y el notFound */
+		/*DONE*/
+		okMessage.setCallId(registerMessage.getCallId());
+		okMessage.setcSeqNumber(registerMessage.getcSeqNumber());
+		okMessage.setcSeqStr(registerMessage.getcSeqStr());
+		okMessage.setFromName(registerMessage.getFromName());
+		okMessage.setFromUri(registerMessage.getFromUri());
+		okMessage.setToName(registerMessage.getToName());
+		okMessage.setToUri(registerMessage.getToUri());
+		okMessage.setContact(registerMessage.getContact());
+		okMessage.setContentLength(0);
+		okMessage.setVias(vias);
+		okMessage.setSdp(null);
+		okMessage.setExpires("3600");
+		
+		notFoundMessage.setCallId(registerMessage.getCallId());
+		notFoundMessage.setcSeqNumber(registerMessage.getcSeqNumber());
+		notFoundMessage.setcSeqStr(registerMessage.getcSeqStr());
+		notFoundMessage.setFromName(registerMessage.getFromName());
+		notFoundMessage.setFromUri(registerMessage.getFromUri());
+		notFoundMessage.setToName(registerMessage.getToName());
+		notFoundMessage.setToUri(registerMessage.getToUri());
+		notFoundMessage.setContentLength(0);
+		notFoundMessage.setVias(vias);
+		
 
 		for (String usuario : registerList ) {
 			if(usuario.equals(uri))
