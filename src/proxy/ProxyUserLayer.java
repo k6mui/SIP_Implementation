@@ -49,29 +49,17 @@ public class ProxyUserLayer {
 		String originAddress = originParts[0];
 		int originPort = Integer.parseInt(originParts[1]);
 		
-		
+		/*Crear el OK y el notFound */
 
 		for (String usuario : registerList ) {
 			if(usuario.equals(uri))
 				transactionLayer.sendResponse(okMessage, originAddress, originPort);
-				
+			else
+				transactionLayer.sendResponse(notFoundMessage, originAddress, originPort);
 				
 		}
 	}
 	
-	public OKMessage createOkMessage(SIPMessage sipMessage) {
-		
-		if (sipMessage instanceof InviteMessage) {
-			
-			
-		}	
-		else if (sipMessage instanceof RegisterMessage) {
-			
-			
-		}
-		
-		return okMessage;
-	}
 
 	public void startListening() {
 		transactionLayer.startListening();

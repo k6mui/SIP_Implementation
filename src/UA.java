@@ -10,12 +10,15 @@ public class UA {
 
 		UaUserLayer userLayer = new UaUserLayer(listenPort, proxyAddress, proxyPort);
 		
+		
 		new Thread() {
 			@Override
 			public void run() {
 				userLayer.startListeningNetwork();
 			}
 		}.start();
+		
+		/*Se llama al commandRgister y se fija el temporizador*/
 		
 		userLayer.startListeningKeyboard();
 	}

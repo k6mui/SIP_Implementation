@@ -25,6 +25,7 @@ public class UaUserLayer {
 	private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 	private int rtpPort;
 	private int listenPort;
+	private String callId;
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
@@ -93,7 +94,6 @@ public class UaUserLayer {
 
 		runVitextClient();
 
-		String callId = UUID.randomUUID().toString();
 
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
@@ -117,6 +117,40 @@ public class UaUserLayer {
 		inviteMessage.setSdp(sdpMessage);
 
 		transactionLayer.call(inviteMessage);
+	}
+	
+	/*TO DO*/
+	public void commandRegister(String line) throws IOException {
+		stopVitextServer();/*No se si mantener esto*/
+		stopVitextClient();
+		
+		System.out.println("Registering...");
+
+		runVitextClient();
+
+		callId = UUID.randomUUID().toString();
+
+		SDPMessage sdpMessage = new SDPMessage();
+		sdpMessage.setIp(this.myAddress);
+		sdpMessage.setPort(this.rtpPort);
+		sdpMessage.setOptions(RTPFLOWS);
+
+		RegisterMessage registerMessage = new RegisterMessage();
+		registerMessage.setDestination("sip:bob@SMA");
+		registerMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
+		registerMessage.setMaxForwards(70);
+		registerMessage.setToName("Alice");
+		registerMessage.setToUri("sip:alice@SMA");
+		registerMessage.setFromName("Alice");
+		registerMessage.setFromUri("sip:alice@SMA");
+		registerMessage.setCallId(callId);
+		registerMessage.setcSeqNumber("1");
+		registerMessage.setcSeqStr("REGISTER");
+		registerMessage.setContact(myAddress + ":" + listenPort);
+		registerMessage.setContentLength(sdpMessage.toStringMessage().getBytes().length);
+
+
+		transactionLayer.register(registerMessage);
 	}
 
 	private void runVitextClient() throws IOException {
