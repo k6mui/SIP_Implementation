@@ -121,7 +121,7 @@ public class UaUserLayer {
 	
 	/*TO DO*/
 	public void commandRegister(String line) throws IOException {
-		stopVitextServer();/*No se si mantener esto*/
+		stopVitextServer();    /*No se si mantener esto*/
 		stopVitextClient();
 		
 		System.out.println("Registering...");
