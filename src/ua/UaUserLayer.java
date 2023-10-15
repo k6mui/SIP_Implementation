@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import common.FindMyIPv4;
 import mensajesSIP.InviteMessage;
+import mensajesSIP.NotFoundMessage;
+import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
 import mensajesSIP.SDPMessage;
 
@@ -42,7 +44,18 @@ public class UaUserLayer {
 		runVitextServer();
 	}
 	
-
+	/* To Do*/
+	public void onOkReceived(OKMessage oKMessage) throws IOException {
+		System.out.println("Received 200 OK from " + oKMessage.getFromName());
+//		runVitextServer();
+	}
+	
+	public void onNFReceived(NotFoundMessage notFoundMessage) throws IOException {
+		System.out.println("Received 404 Not Found ");
+//		runVitextServer();
+	}
+	/* To Do*/
+	
 	public void startListeningNetwork() {
 		transactionLayer.startListeningNetwork();
 	}
@@ -121,27 +134,29 @@ public class UaUserLayer {
 	
 	/*TO DO*/
 	public void commandRegister(String line) throws IOException {
-		stopVitextServer();/*No se si mantener esto*/
+		stopVitextServer();
 		stopVitextClient();
 		
 		System.out.println("Registering...");
 
-		runVitextClient();
+		runVitextClient(); // --------------------------------------  Aqui también tengo dudas
 
 		callId = UUID.randomUUID().toString();
 
+		/* Preguntar sobre este parrafo*/
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
 		sdpMessage.setPort(this.rtpPort);
 		sdpMessage.setOptions(RTPFLOWS);
-
+		/* Preguntar sobre este parrafo*/
+		
 		RegisterMessage registerMessage = new RegisterMessage();
 		registerMessage.setDestination("sip:bob@SMA");
 		registerMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
 		registerMessage.setMaxForwards(70);
-		registerMessage.setToName("Alice");
-		registerMessage.setToUri("sip:alice@SMA");
-		registerMessage.setFromName("Alice");
+		registerMessage.setToName("Alice"); 
+		registerMessage.setToUri("sip:alice@SMA"); 
+		registerMessage.setFromName("Alice"); 
 		registerMessage.setFromUri("sip:alice@SMA");
 		registerMessage.setCallId(callId);
 		registerMessage.setcSeqNumber("1");
@@ -160,7 +175,7 @@ public class UaUserLayer {
 	private void stopVitextClient() {
 		if (vitextClient != null) {
 			vitextClient.destroy();
-		}
+		} 
 	}
 
 	private void runVitextServer() throws IOException {

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.SocketException;
 
 import mensajesSIP.InviteMessage;
+import mensajesSIP.NotFoundMessage;
+import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
 import mensajesSIP.SIPMessage;
 
@@ -32,7 +34,29 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else {
+		} else if (sipMessage instanceof OKMessage){ /* to do -------------------*/
+			OKMessage okMessage = (OKMessage) sipMessage;
+			switch (state) {
+			case IDLE:
+				userLayer.onOkReceived(okMessage);
+				break;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
+		} else if (sipMessage instanceof NotFoundMessage){ /* to do -------------------*/
+			NotFoundMessage notFoundMessage = (NotFoundMessage) sipMessage;
+			switch (state) {
+			case IDLE:
+				userLayer.onNFReceived(notFoundMessage);
+				break;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
+		}/* to do --------------------------------------------------------------*/
+		
+		else {
 			System.err.println("Unexpected message, throwing away");
 		}
 	}
