@@ -39,6 +39,7 @@ public class UaTransactionLayer {
 			switch (state) {
 			case IDLE:
 				userLayer.onOkReceived(okMessage);
+				userLayer.setResponseRegister(true);
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -49,6 +50,7 @@ public class UaTransactionLayer {
 			switch (state) {
 			case IDLE:
 				userLayer.onNFReceived(notFoundMessage);
+				userLayer.setResponseRegister(true);
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");

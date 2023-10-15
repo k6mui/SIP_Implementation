@@ -28,16 +28,34 @@ public class UaUserLayer {
 	private int rtpPort;
 	private int listenPort;
 	private String callId;
+	private String t_expires;
+	private boolean debug;
+	private boolean responseRegister;
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
 
-	public UaUserLayer(int listenPort, String proxyAddress, int proxyPort)
+	public UaUserLayer(int listenPort, String proxyAddress, int proxyPort, boolean debug, String t_expires)
 			throws SocketException, UnknownHostException {
 		this.transactionLayer = new UaTransactionLayer(listenPort, proxyAddress, proxyPort, this);
 		this.listenPort = listenPort;
 		this.rtpPort = listenPort + 1;
+		this.debug = debug;
+		this.t_expires = t_expires;
+		this.responseRegister = false;
 	}
+
+	public boolean isResponseRegister() {
+		return responseRegister;
+	}
+
+
+
+	public void setResponseRegister(boolean responseRegister) {
+		this.responseRegister = responseRegister;
+	}
+
+
 
 	public void onInviteReceived(InviteMessage inviteMessage) throws IOException {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
@@ -47,12 +65,10 @@ public class UaUserLayer {
 	/* To Do*/
 	public void onOkReceived(OKMessage oKMessage) throws IOException {
 		System.out.println("Received 200 OK from " + oKMessage.getFromName());
-//		runVitextServer();
 	}
 	
 	public void onNFReceived(NotFoundMessage notFoundMessage) throws IOException {
 		System.out.println("Received 404 Not Found ");
-//		runVitextServer();
 	}
 	/* To Do*/
 	
@@ -106,7 +122,8 @@ public class UaUserLayer {
 		System.out.println("Inviting...");
 
 		runVitextClient();
-
+		
+		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
@@ -133,19 +150,15 @@ public class UaUserLayer {
 	}
 	
 	/*TO DO*/
-	public void commandRegister(String line) throws IOException {
-<<<<<<< HEAD
+	public void commandRegister(String line) throws IOException { // Preguntar al profe !!!!!!!!!!!!!
 		stopVitextServer();
-=======
 		stopVitextServer();    /*No se si mantener esto*/
->>>>>>> 23a0e988d1805940cb42d282490fc08f2a11e2e3
-		stopVitextClient();
 		
 		System.out.println("Registering...");
 
 		runVitextClient(); // --------------------------------------  Aqui también tengo dudas
 
-		callId = UUID.randomUUID().toString();
+		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
 		/* Preguntar sobre este parrafo*/
 		SDPMessage sdpMessage = new SDPMessage();
@@ -167,6 +180,8 @@ public class UaUserLayer {
 		registerMessage.setcSeqStr("REGISTER");
 		registerMessage.setContact(myAddress + ":" + listenPort);
 		registerMessage.setContentLength(sdpMessage.toStringMessage().getBytes().length);
+		registerMessage.setExpires(this.t_expires);
+
 
 
 		transactionLayer.register(registerMessage);
