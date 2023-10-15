@@ -61,7 +61,7 @@ public class ProxyUserLayer {
 		okMessage.setContentLength(0);
 		okMessage.setVias(vias);
 		okMessage.setSdp(null);
-		okMessage.setExpires("3600");
+		okMessage.setExpires(registerMessage.getExpires());
 		
 		notFoundMessage.setCallId(registerMessage.getCallId());
 		notFoundMessage.setcSeqNumber(registerMessage.getcSeqNumber());

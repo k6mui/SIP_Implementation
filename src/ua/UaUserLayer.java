@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import common.FindMyIPv4;
 import mensajesSIP.InviteMessage;
+import mensajesSIP.NotFoundMessage;
+import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
 import mensajesSIP.SDPMessage;
 
@@ -26,23 +28,50 @@ public class UaUserLayer {
 	private int rtpPort;
 	private int listenPort;
 	private String callId;
+	private String t_expires;
+	private boolean debug;
+	private boolean responseRegister;
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
 
-	public UaUserLayer(int listenPort, String proxyAddress, int proxyPort)
+	public UaUserLayer(int listenPort, String proxyAddress, int proxyPort, boolean debug, String t_expires)
 			throws SocketException, UnknownHostException {
 		this.transactionLayer = new UaTransactionLayer(listenPort, proxyAddress, proxyPort, this);
 		this.listenPort = listenPort;
 		this.rtpPort = listenPort + 1;
+		this.debug = debug;
+		this.t_expires = t_expires;
+		this.responseRegister = false;
 	}
+
+	public boolean isResponseRegister() {
+		return responseRegister;
+	}
+
+
+
+	public void setResponseRegister(boolean responseRegister) {
+		this.responseRegister = responseRegister;
+	}
+
+
 
 	public void onInviteReceived(InviteMessage inviteMessage) throws IOException {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
 		runVitextServer();
 	}
 	
-
+	/* To Do*/
+	public void onOkReceived(OKMessage oKMessage) throws IOException {
+		System.out.println("Received 200 OK from " + oKMessage.getFromName());
+	}
+	
+	public void onNFReceived(NotFoundMessage notFoundMessage) throws IOException {
+		System.out.println("Received 404 Not Found ");
+	}
+	/* To Do*/
+	
 	public void startListeningNetwork() {
 		transactionLayer.startListeningNetwork();
 	}
@@ -93,7 +122,8 @@ public class UaUserLayer {
 		System.out.println("Inviting...");
 
 		runVitextClient();
-
+		
+		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
@@ -120,34 +150,38 @@ public class UaUserLayer {
 	}
 	
 	/*TO DO*/
-	public void commandRegister(String line) throws IOException {
+	public void commandRegister(String line) throws IOException { // Preguntar al profe !!!!!!!!!!!!!
+		stopVitextServer();
 		stopVitextServer();    /*No se si mantener esto*/
-		stopVitextClient();
 		
 		System.out.println("Registering...");
 
-		runVitextClient();
+		runVitextClient(); // --------------------------------------  Aqui también tengo dudas
 
-		callId = UUID.randomUUID().toString();
+		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
+		/* Preguntar sobre este parrafo*/
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
 		sdpMessage.setPort(this.rtpPort);
 		sdpMessage.setOptions(RTPFLOWS);
-
+		/* Preguntar sobre este parrafo*/
+		
 		RegisterMessage registerMessage = new RegisterMessage();
 		registerMessage.setDestination("sip:bob@SMA");
 		registerMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
 		registerMessage.setMaxForwards(70);
-		registerMessage.setToName("Alice");
-		registerMessage.setToUri("sip:alice@SMA");
-		registerMessage.setFromName("Alice");
+		registerMessage.setToName("Alice"); 
+		registerMessage.setToUri("sip:alice@SMA"); 
+		registerMessage.setFromName("Alice"); 
 		registerMessage.setFromUri("sip:alice@SMA");
 		registerMessage.setCallId(callId);
 		registerMessage.setcSeqNumber("1");
 		registerMessage.setcSeqStr("REGISTER");
 		registerMessage.setContact(myAddress + ":" + listenPort);
 		registerMessage.setContentLength(sdpMessage.toStringMessage().getBytes().length);
+		registerMessage.setExpires(this.t_expires);
+
 
 
 
@@ -161,7 +195,7 @@ public class UaUserLayer {
 	private void stopVitextClient() {
 		if (vitextClient != null) {
 			vitextClient.destroy();
-		}
+		} 
 	}
 
 	private void runVitextServer() throws IOException {

@@ -8,7 +8,7 @@ import mensajesSIP.RegisterMessage;
 import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
-	private static final int IDLE = 0;
+	private static final int IDLE = 0; 	/*to do: Completar con los estados que faltan*/
 	private int state = IDLE;
 
 	private ProxyUserLayer userLayer;
