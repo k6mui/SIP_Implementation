@@ -31,11 +31,13 @@ public class UaUserLayer {
 	private String t_expires;
 	private boolean debug;
 	private boolean responseRegister;
+	private String uri;
+	private String proxyAdd;
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
 
-	public UaUserLayer(int listenPort, String proxyAddress, int proxyPort, boolean debug, String t_expires)
+	public UaUserLayer(String uri, int listenPort, String proxyAddress, int proxyPort, boolean debug, String t_expires)
 			throws SocketException, UnknownHostException {
 		this.transactionLayer = new UaTransactionLayer(listenPort, proxyAddress, proxyPort, this);
 		this.listenPort = listenPort;
@@ -43,6 +45,8 @@ public class UaUserLayer {
 		this.debug = debug;
 		this.t_expires = t_expires;
 		this.responseRegister = false;
+		this.uri = uri;
+		this.proxyAdd = proxyAddress;
 	}
 
 	public boolean isResponseRegister() {
@@ -116,12 +120,12 @@ public class UaUserLayer {
 	}
 
 	private void commandInvite(String line) throws IOException {
-		stopVitextServer();
-		stopVitextClient();
+		//stopVitextServer();
+		//stopVitextClient();
 		
 		System.out.println("Inviting...");
 
-		runVitextClient();
+		//runVitextClient();
 		
 		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
@@ -151,39 +155,28 @@ public class UaUserLayer {
 	
 	/*TO DO*/
 	public void commandRegister(String line) throws IOException { // Preguntar al profe !!!!!!!!!!!!!
-		stopVitextServer();
-		stopVitextServer();    /*No se si mantener esto*/
+		//stopVitextServer();
+		//stopVitextServer();    /*No se si mantener esto*/
 		
 		System.out.println("Registering...");
-
-		runVitextClient(); // --------------------------------------  Aqui también tengo dudas
-
+		
+		
+		
 		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
 
-		/* Preguntar sobre este parrafo*/
-		SDPMessage sdpMessage = new SDPMessage();
-		sdpMessage.setIp(this.myAddress);
-		sdpMessage.setPort(this.rtpPort);
-		sdpMessage.setOptions(RTPFLOWS);
-		/* Preguntar sobre este parrafo*/
-		
 		RegisterMessage registerMessage = new RegisterMessage();
-		registerMessage.setDestination("sip:bob@SMA");
+		registerMessage.setDestination("sip:" + proxyAdd  + "@SMA");
 		registerMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
 		registerMessage.setMaxForwards(70);
-		registerMessage.setToName("Alice"); 
-		registerMessage.setToUri("sip:alice@SMA"); 
-		registerMessage.setFromName("Alice"); 
-		registerMessage.setFromUri("sip:alice@SMA");
+		registerMessage.setToName(extractName(uri)); 
+		registerMessage.setToUri("sip:"+uri); 
+		registerMessage.setFromName(extractName(uri)); 
+		registerMessage.setFromUri("sip:"+uri);
 		registerMessage.setCallId(callId);
 		registerMessage.setcSeqNumber("1");
 		registerMessage.setcSeqStr("REGISTER");
 		registerMessage.setContact(myAddress + ":" + listenPort);
-		registerMessage.setContentLength(sdpMessage.toStringMessage().getBytes().length);
 		registerMessage.setExpires(this.t_expires);
-
-
-
 
 		transactionLayer.register(registerMessage);
 	}
@@ -207,5 +200,14 @@ public class UaUserLayer {
 			vitextServer.destroy();
 		}
 	}
-
+	
+	
+	private static String extractName(String uri) {
+		if (uri.contains("@")) {
+			String[] partes = uri.split("@");
+			return partes[0];
+		} else {
+			return "Error: Not @";
+		}
+	}
 }

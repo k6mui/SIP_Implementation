@@ -18,7 +18,7 @@ public class UA {
 		boolean debugIndicator = Boolean.parseBoolean(args[4]); 
 		String t_expires = args[5];
 
-		UaUserLayer userLayer = new UaUserLayer(listenPort, proxyAddress, proxyPort, debugIndicator, t_expires);
+		UaUserLayer userLayer = new UaUserLayer(args[0], listenPort, proxyAddress, proxyPort, debugIndicator, t_expires);
 		
 		
 		Timer timer = new Timer();

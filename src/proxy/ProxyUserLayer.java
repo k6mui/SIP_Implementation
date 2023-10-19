@@ -20,8 +20,8 @@ public class ProxyUserLayer {
 	
 	public ProxyUserLayer(int listenPort) throws SocketException {
 		this.transactionLayer = new ProxyTransactionLayer(listenPort, this);
-		this.registerList.add("Bob");
-		this.registerList.add("Alice");
+		this.registerList.add("sip:bob@SMA");
+		this.registerList.add("sip:alice@SMA");
 		this.okMessage = new OKMessage();
 		this.notFoundMessage = new NotFoundMessage();
 	}
@@ -40,6 +40,7 @@ public class ProxyUserLayer {
 		
 		String name = registerMessage.getFromName(); 
 		String uri = registerMessage.getToUri();
+		boolean enviado = false;
 		
 		
 		System.out.println("Received REGISTER from " + name);
@@ -75,11 +76,14 @@ public class ProxyUserLayer {
 		
 
 		for (String usuario : registerList ) {
-			if(usuario.equals(uri))
+			if(usuario.equals(uri)) {
 				transactionLayer.sendResponse(okMessage, originAddress, originPort);
-			else
-				transactionLayer.sendResponse(notFoundMessage, originAddress, originPort);
-				
+				enviado = true;
+			}
+		}
+		
+		if (!enviado){
+			transactionLayer.sendResponse(notFoundMessage, originAddress, originPort);
 		}
 	}
 	
