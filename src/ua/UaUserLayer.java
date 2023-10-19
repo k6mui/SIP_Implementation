@@ -123,11 +123,13 @@ public class UaUserLayer {
 		//stopVitextServer();
 		//stopVitextClient();
 		
+		String[] args = line.split(" ");
+		
 		System.out.println("Inviting...");
 
 		//runVitextClient();
 		
-		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
+		callId = UUID.randomUUID().toString();
 
 		SDPMessage sdpMessage = new SDPMessage();
 		sdpMessage.setIp(this.myAddress);
@@ -135,16 +137,16 @@ public class UaUserLayer {
 		sdpMessage.setOptions(RTPFLOWS);
 
 		InviteMessage inviteMessage = new InviteMessage();
-		inviteMessage.setDestination("sip:bob@SMA");
+		inviteMessage.setDestination("sip:" + args[1]);   // Poner ejemplo@SMA
 		inviteMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
 		inviteMessage.setMaxForwards(70);
-		inviteMessage.setToName("Bob");
-		inviteMessage.setToUri("sip:bob@SMA");
-		inviteMessage.setFromName("Alice");
-		inviteMessage.setFromUri("sip:alice@SMA");
+		inviteMessage.setToName(extractName(args[1]));
+		inviteMessage.setToUri("sip:"+ args[1]);
+		inviteMessage.setFromName(extractName(uri));
+		inviteMessage.setFromUri("sip:" + uri);
 		inviteMessage.setCallId(callId);
 		inviteMessage.setcSeqNumber("1");
-		inviteMessage.setcSeqStr("INVITE");
+		inviteMessage.setcSeqStr(args[0]);    // Poner en Mayuscula el INVITE
 		inviteMessage.setContact(myAddress + ":" + listenPort);
 		inviteMessage.setContentType("application/sdp");
 		inviteMessage.setContentLength(sdpMessage.toStringMessage().getBytes().length);
@@ -162,7 +164,7 @@ public class UaUserLayer {
 		
 		
 		
-		callId = UUID.randomUUID().toString(); // Preguntar al profe !!!!!!!!!!!!!!
+		callId = UUID.randomUUID().toString(); 
 
 		RegisterMessage registerMessage = new RegisterMessage();
 		registerMessage.setDestination("sip:" + proxyAdd  + "@SMA");
