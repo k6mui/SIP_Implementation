@@ -11,6 +11,9 @@ import mensajesSIP.SIPMessage;
 
 public class UaTransactionLayer {
 	private static final int IDLE = 0;
+	private static final int CALL = 1;
+	private static final int PROCC = 2;
+	private static final int COMPL = 3;
 	private int state = IDLE;
 
 	private UaUserLayer userLayer;
@@ -68,6 +71,7 @@ public class UaTransactionLayer {
 	}
 
 	public void call(InviteMessage inviteMessage) throws IOException {
+		state=CALL;
 		transportLayer.sendToProxy(inviteMessage);
 	}
 	/*DONE*/

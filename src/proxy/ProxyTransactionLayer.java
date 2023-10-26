@@ -9,7 +9,10 @@ import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
 	private static final int IDLE = 0; 	/*to do: Completar con los estados que faltan*/
-	private int state = IDLE;
+	private static final int PROCC = 1;
+	private static final int COMPL = 2;
+	private int stateA = IDLE;
+	private int stateB = IDLE;
 
 	private ProxyUserLayer userLayer;
 	private ProxyTransportLayer transportLayer;
@@ -22,9 +25,14 @@ public class ProxyTransactionLayer {
 	public void onMessageReceived(SIPMessage sipMessage) throws IOException {
 		if (sipMessage instanceof InviteMessage) {
 			InviteMessage inviteMessage = (InviteMessage) sipMessage;
-			switch (state) {
+			switch (stateA) {
 			case IDLE:
 				userLayer.onInviteReceived(inviteMessage);
+				stateA = PROCC;
+				break;
+			case PROCC:
+				break;
+			case COMPL:
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -34,18 +42,8 @@ public class ProxyTransactionLayer {
 		
 		else if (sipMessage instanceof RegisterMessage) {
 			RegisterMessage registerMessage = (RegisterMessage) sipMessage;
-			switch (state) {
-			case IDLE:
-				userLayer.onRegisterReceived(registerMessage);
-				break;
-			default:
-				System.err.println("Unexpected message, throwing away");
-				break;
-			}
-		} 
-		
-		else {
-			System.err.println("Unexpected message, throwing away");
+			userLayer.onRegisterReceived(registerMessage);
+
 		}
 	}
 	

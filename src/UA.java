@@ -50,6 +50,7 @@ public class UA {
         		temp = false;
         		timer.cancel();
         	}
+        	Thread.sleep(1000);
         }
         
 		userLayer.startListeningKeyboard();

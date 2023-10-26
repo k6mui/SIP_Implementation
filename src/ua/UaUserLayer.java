@@ -110,7 +110,7 @@ public class UaUserLayer {
 	private void promptIdle() {
 		System.out.println("INVITE xxx");
 	}
-
+/*TO DO LA PARTE DE AÑADIR MAS MENSAJES AL LEER*/
 	private void command(String line) throws IOException {
 		if (line.startsWith("INVITE")) {
 			commandInvite(line);
