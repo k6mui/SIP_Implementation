@@ -15,13 +15,15 @@ import mensajesSIP.TryingMessage;
 
 public class ProxyUserLayer {
 	private ProxyTransactionLayer transactionLayer;
-	private ArrayList<User> registerList = new ArrayList<>(); 
+	private ArrayList<Usuario> registerList = new ArrayList<>(); 
 	
+	/*TO DO CAMBIAR ESO*/
 	private OKMessage okMessage;
 	private TryingMessage message100;
 	private NotFoundMessage notFoundMessage;
-	private User alice = new User("sip:alice@SMA");
-	private User bob= new User("sip:bob@SMA");
+	private Usuario alice = new Usuario("sip:alice@SMA");
+	private Usuario bob= new Usuario("sip:bob@SMA");
+	private int listenPort;
 	
 	
 	public ProxyUserLayer(int listenPort) throws SocketException {
@@ -31,18 +33,20 @@ public class ProxyUserLayer {
 		this.okMessage = new OKMessage();
 		this.notFoundMessage = new NotFoundMessage();
 		this.message100 = new TryingMessage();
+		this.listenPort = listenPort;
 	}
 	/*to do*/
-	public void onInviteReceived(InviteMessage inviteMessage) throws IOException {
+	public boolean onInviteReceived(InviteMessage inviteMessage) throws IOException {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
 		ArrayList<String> vias = inviteMessage.getVias();
 		String origin = vias.get(0);
 		String[] originParts = origin.split(":");
 		String originAddress = originParts[0];
 		int originPort = Integer.parseInt(originParts[1]);
+		String destAddress = null;
+		int destPort = 0;
 		
-		
-		/*private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();*/
+		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 
 		
 		message100.setCallId(inviteMessage.getCallId());
@@ -53,16 +57,45 @@ public class ProxyUserLayer {
 		message100.setToName(inviteMessage.getToName());
 		message100.setToUri(inviteMessage.getToUri());
 		message100.setContentLength(0);
-		message100.setVias(vias);
+		message100.setVias(vias); 
 		
-		for (User usuario : registerList ) {
-			if(usuario.getUri().equals(inviteMessage.getToUri())) {
-				if (usuario.isActive()) {
-					
-				}
+		notFoundMessage.setCallId(inviteMessage.getCallId());
+		notFoundMessage.setcSeqNumber(inviteMessage.getcSeqNumber());
+		notFoundMessage.setcSeqStr(inviteMessage.getcSeqStr());
+		notFoundMessage.setFromName(inviteMessage.getFromName());
+		notFoundMessage.setFromUri(inviteMessage.getFromUri());
+		notFoundMessage.setToName(inviteMessage.getToName());
+		notFoundMessage.setToUri(inviteMessage.getToUri());
+		notFoundMessage.setContentLength(0);
+		notFoundMessage.setVias(vias);
+		
+		inviteMessage.setMaxForwards(inviteMessage.getMaxForwards()+1);
+		vias.add(myAddress + ":" + listenPort);
+		inviteMessage.setVias(vias);
+		
+		boolean bothOK = true;
+		for (Usuario usuario : registerList ) {
+			if (!usuario.isActive()) {
+				bothOK = false;
 			}
 		}
-
+		
+		for (Usuario usuario : registerList ) {
+			if(usuario.getUri().equals(inviteMessage.getToUri())) {
+				destAddress = usuario.getAddress();
+				destPort = usuario.getPort();
+			}
+		}
+		
+		
+		if (bothOK) {
+			transactionLayer.sendResponse(message100, originAddress, originPort);
+			transactionLayer.sendInvite(inviteMessage, destAddress , destPort);
+		}else {
+			transactionLayer.sendResponse(notFoundMessage, originAddress, originPort);
+		}
+		
+		return bothOK;
 	}
 	/*to do*/
 	public void onRegisterReceived(RegisterMessage registerMessage) throws IOException {
@@ -108,7 +141,7 @@ public class ProxyUserLayer {
 		
 		Date dateExpires = new Date(currentDate.getTime()+ milistoAdd);
 
-		for (User usuario : registerList ) {
+		for (Usuario usuario : registerList ) {
 			if(usuario.getUri().equals(uri)) {
 				transactionLayer.sendResponse(okMessage, originAddress, originPort);
 				enviado = true;

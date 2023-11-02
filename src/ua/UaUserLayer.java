@@ -9,14 +9,19 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import common.FindMyIPv4;
+import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RingingMessage;
 import mensajesSIP.SDPMessage;
 
 public class UaUserLayer {
 	private static final int IDLE = 0;
+	private static final int CALL = 1;
+	private static final int PROCC = 2;
+	private static final int COMPL = 3;
 	private int state = IDLE;
 
 	public static final ArrayList<Integer> RTPFLOWS = new ArrayList<Integer>(
@@ -33,6 +38,11 @@ public class UaUserLayer {
 	private boolean responseRegister;
 	private String uri;
 	private String proxyAdd;
+	
+	private RingingMessage message180;
+	private OKMessage message200;
+	private BusyHereMessage message486;
+	
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
@@ -47,6 +57,9 @@ public class UaUserLayer {
 		this.responseRegister = false;
 		this.uri = uri;
 		this.proxyAdd = proxyAddress;
+		this.message180 = new RingingMessage();
+		this.message200 = new OKMessage();
+		this.message486 = new BusyHereMessage();
 	}
 
 	public boolean isResponseRegister() {
@@ -62,8 +75,37 @@ public class UaUserLayer {
 
 
 	public void onInviteReceived(InviteMessage inviteMessage) throws IOException {
-		System.out.println("Received INVITE from " + inviteMessage.getFromName());
-		runVitextServer();
+		System.out.println(inviteMessage.getFromName() + " is calling you");
+		//runVitextServer();
+		ArrayList<String> vias = inviteMessage.getVias();
+		
+		
+		RingingMessage message180 = new RingingMessage();
+		message180.setCallId(inviteMessage.getCallId());
+		message180.setcSeqNumber(inviteMessage.getcSeqNumber());
+		message180.setcSeqStr(inviteMessage.getcSeqStr());
+		message180.setFromName(inviteMessage.getFromName());
+		message180.setFromUri(inviteMessage.getFromUri());
+		message180.setToName(inviteMessage.getToName());
+		message180.setToUri(inviteMessage.getToUri());
+		message180.setContentLength(0);
+		vias.add(myAddress + ":" + listenPort);
+		message180.setVias(vias); 
+		
+		transactionLayer.send180(message180);
+		
+		message200.setCallId(inviteMessage.getCallId());
+		message200.setcSeqNumber(inviteMessage.getcSeqNumber());
+		message200.setcSeqStr(inviteMessage.getcSeqStr());
+		message200.setFromName(inviteMessage.getFromName());
+		message200.setFromUri(inviteMessage.getFromUri());
+		message200.setToName(inviteMessage.getToName());
+		message200.setToUri(inviteMessage.getToUri());
+		message200.setContact(inviteMessage.getContact());
+		message200.setContentLength(0);
+		message200.setVias(vias);
+		message200.setSdp(null);
+
 	}
 	
 	/* To Do*/
@@ -97,9 +139,15 @@ public class UaUserLayer {
 
 	private void prompt() {
 		System.out.println("");
-		switch (state) {
+		switch (transactionLayer.getState()) {
 		case IDLE:
 			promptIdle();
+			break;
+		case PROCC:
+			System.out.println("Enter [YES/NO] to accept/decline the call: ");
+			break;
+		case COMPL:
+			
 			break;
 		default:
 			throw new IllegalStateException("Unexpected state: " + state);
@@ -115,6 +163,14 @@ public class UaUserLayer {
 		if (line.startsWith("INVITE")) {
 			commandInvite(line);
 		} else {
+			System.out.println("Bad command");
+		}
+		
+		if (line.startsWith("YES")) {
+			command200(line);
+		}else if (line.startsWith("NO")){
+			command486(line);
+		}else {
 			System.out.println("Bad command");
 		}
 	}
@@ -163,7 +219,6 @@ public class UaUserLayer {
 		System.out.println("Registering...");
 		
 		
-		
 		callId = UUID.randomUUID().toString(); 
 
 		RegisterMessage registerMessage = new RegisterMessage();
@@ -182,7 +237,16 @@ public class UaUserLayer {
 
 		transactionLayer.register(registerMessage);
 	}
-
+	
+	private void command200(String line) throws IOException {
+		/*SEND 200 CREADO EN EL INVITERECEIVED*/
+	}
+	
+	private void command486(String line) throws IOException {
+		
+	}
+	
+	
 	private void runVitextClient() throws IOException {
 		vitextClient = Runtime.getRuntime().exec("xterm -e vitext/vitextclient -p 5000 239.1.2.3");
 	}

@@ -32,6 +32,7 @@ public class UaTransactionLayer {
 			switch (state) {
 			case IDLE:
 				userLayer.onInviteReceived(inviteMessage);
+				state = PROCC;
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -78,4 +79,27 @@ public class UaTransactionLayer {
 	public void register(RegisterMessage registerMessage) throws IOException {
 		transportLayer.sendToProxy(registerMessage);
 	}
+	
+	public void send180(SIPMessage sipMessage) throws IOException {
+		transportLayer.sendToProxy(sipMessage);
+	}
+	
+	public void send200(SIPMessage sipMessage) throws IOException {
+		transportLayer.sendToProxy(sipMessage);
+		//state=
+	}
+	
+	public void send404(SIPMessage sipMessage) throws IOException {
+		transportLayer.sendToProxy(sipMessage);
+		state = COMPL;
+	}
+	
+	
+	
+	
+	
+	public int getState() {
+		return state;
+	}
+
 }

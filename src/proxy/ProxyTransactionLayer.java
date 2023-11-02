@@ -9,8 +9,9 @@ import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
 	private static final int IDLE = 0; 	/*to do: Completar con los estados que faltan*/
-	private static final int PROCC = 1;
-	private static final int COMPL = 2;
+	private static final int CALL = 1;
+	private static final int PROCC = 2;
+	private static final int COMPL = 3;
 	private int stateA = IDLE;
 	private int stateB = IDLE;
 
@@ -27,12 +28,8 @@ public class ProxyTransactionLayer {
 			InviteMessage inviteMessage = (InviteMessage) sipMessage;
 			switch (stateA) {
 			case IDLE:
-				userLayer.onInviteReceived(inviteMessage);
-				stateA = PROCC;
-				break;
-			case PROCC:
-				break;
-			case COMPL:
+				if(userLayer.onInviteReceived(inviteMessage))
+					{stateA = PROCC;}
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -55,8 +52,9 @@ public class ProxyTransactionLayer {
 
 	
 	
-	public void echoInvite(InviteMessage inviteMessage, String address, int port) throws IOException {
+	public void sendInvite(InviteMessage inviteMessage, String address, int port) throws IOException {
 		transportLayer.send(inviteMessage, address, port);
+		stateB = CALL;
 	}
 	
 

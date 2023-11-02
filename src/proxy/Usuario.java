@@ -2,14 +2,14 @@ package proxy;
 
 import java.util.Date;
 
-public class User {
+public class Usuario {
 	private String uri;
 	private boolean active;
 	private int port;
 	private String address;
 	private Date expires;
 	
-	public User(String uri) {
+	public Usuario(String uri) {
 		this.uri = uri;
 	}
 	public Date getExpires() {
@@ -42,4 +42,5 @@ public class User {
 	public void setActive(boolean active) {
 		this.active = active;
 	}
+	
 }
