@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import common.FindMyIPv4;
+import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RingingMessage;
 import mensajesSIP.SIPMessage;
 import mensajesSIP.TryingMessage;
 
@@ -157,7 +159,66 @@ public class ProxyUserLayer {
 		}
 	}
 	
+	public void onRingingMessage(RingingMessage ringingMessage) throws IOException {
+		ArrayList<String> vias = ringingMessage.getVias();
+		
+		String destAddress = null;
+		int destPort = 0;
+		
+		vias.remove(vias.lastIndexOf(vias));
+		ringingMessage.setVias(vias);
 
+		for (Usuario usuario : registerList ) {
+			if(usuario.getUri().equals(ringingMessage.getToUri())) {
+				destAddress = usuario.getAddress();
+				destPort = usuario.getPort();
+			}
+		}
+		
+		transactionLayer.sendResponse(ringingMessage, destAddress, destPort);
+	
+	}
+	
+	public void onOkMessage(OKMessage okMessage) throws IOException {
+		ArrayList<String> vias = okMessage.getVias();
+		String destAddress = null;
+		int destPort = 0;
+		
+		vias.remove(vias.lastIndexOf(vias));
+		okMessage.setVias(vias);
+		
+		for (Usuario usuario : registerList ) {
+			if(usuario.getUri().equals(okMessage.getToUri())) {
+				destAddress = usuario.getAddress();
+				destPort = usuario.getPort();
+			}
+		}
+		
+		transactionLayer.sendResponse(okMessage, destAddress, destPort);
+		
+	}
+	
+	public void onBusy(BusyHereMessage busyHere) throws IOException {
+		ArrayList<String> vias = busyHere.getVias();
+		String destAddress = null;
+		int destPort = 0;
+		
+		vias.remove(vias.lastIndexOf(vias));
+		busyHere.setVias(vias);
+		
+		for (Usuario usuario : registerList ) {
+			if(usuario.getUri().equals(busyHere.getToUri())) {
+				destAddress = usuario.getAddress();
+				destPort = usuario.getPort();
+			}
+		}
+		
+		transactionLayer.sendResponse(busyHere, destAddress, destPort);
+		
+	}
+
+	
+	
 	public void startListening() {
 		transactionLayer.startListening();
 	}

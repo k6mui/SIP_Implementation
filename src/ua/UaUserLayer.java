@@ -16,6 +16,7 @@ import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
 import mensajesSIP.RingingMessage;
 import mensajesSIP.SDPMessage;
+import mensajesSIP.TryingMessage;
 
 public class UaUserLayer {
 	private static final int IDLE = 0;
@@ -93,7 +94,7 @@ public class UaUserLayer {
 		message180.setVias(vias); 
 		
 		transactionLayer.send180(message180);
-		
+				
 		message200.setCallId(inviteMessage.getCallId());
 		message200.setcSeqNumber(inviteMessage.getcSeqNumber());
 		message200.setcSeqStr(inviteMessage.getcSeqStr());
@@ -105,6 +106,17 @@ public class UaUserLayer {
 		message200.setContentLength(0);
 		message200.setVias(vias);
 		message200.setSdp(null);
+		
+				
+		message486.setCallId(inviteMessage.getCallId());
+		message486.setcSeqNumber(inviteMessage.getcSeqNumber());
+		message486.setcSeqStr(inviteMessage.getcSeqStr());
+		message486.setFromName(inviteMessage.getFromName());
+		message486.setFromUri(inviteMessage.getFromUri());
+		message486.setToName(inviteMessage.getToName());
+		message486.setToUri(inviteMessage.getToUri());
+		message486.setContentLength(0);
+		message486.setVias(vias);
 
 	}
 	
@@ -113,8 +125,19 @@ public class UaUserLayer {
 		System.out.println("Received 200 OK from " + oKMessage.getFromName());
 	}
 	
-	public void onNFReceived(NotFoundMessage notFoundMessage) throws IOException {
+	public void onNFReceived( ) throws IOException {
 		System.out.println("Received 404 Not Found ");
+	}
+	
+	public void onTrying( ) throws IOException {
+		System.out.println("Received 100 Trying Message :)");
+	}
+	public void onRinging(RingingMessage ringingMessage ) throws IOException {
+		System.out.println("PIII PIII PIII PIII --->  LLamando a " + ringingMessage.getToName());
+	}
+	
+	public void onBusy(BusyHereMessage busyHereMessage) throws IOException {
+		System.out.println(busyHereMessage.getToName() + "Esta buuuuusy :(" );
 	}
 	/* To Do*/
 	
@@ -240,10 +263,13 @@ public class UaUserLayer {
 	
 	private void command200(String line) throws IOException {
 		/*SEND 200 CREADO EN EL INVITERECEIVED*/
+		transactionLayer.send200(message200);
+
 	}
 	
 	private void command486(String line) throws IOException {
-		
+		transactionLayer.send486(message486);
+
 	}
 	
 	

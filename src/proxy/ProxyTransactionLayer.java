@@ -3,8 +3,11 @@ package proxy;
 import java.io.IOException;
 import java.net.SocketException;
 
+import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
+import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RingingMessage;
 import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
@@ -41,7 +44,48 @@ public class ProxyTransactionLayer {
 			RegisterMessage registerMessage = (RegisterMessage) sipMessage;
 			userLayer.onRegisterReceived(registerMessage);
 
+		} else if (sipMessage instanceof RingingMessage){
+			RingingMessage ringingMessage = (RingingMessage) sipMessage;
+			switch (stateB) {
+			case CALL:
+				userLayer.onRingingMessage(ringingMessage);
+				stateB = PROCC;
+				break;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
+		} else if (sipMessage instanceof OKMessage){
+			OKMessage okMessage = (OKMessage) sipMessage;
+			switch (stateB) {
+			case CALL:
+				userLayer.onOkMessage(okMessage);
+				stateB = IDLE;
+				break;
+			case PROCC:
+				userLayer.onOkMessage(okMessage);
+				stateB = IDLE;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
+		} else if (sipMessage instanceof BusyHereMessage) {
+			BusyHereMessage busyHereMessage = (BusyHereMessage) sipMessage;
+			switch (stateB) {
+			case CALL:
+				userLayer.onBusy(busyHereMessage);
+				stateB = IDLE;
+				break;
+			case PROCC:
+				userLayer.onBusy(busyHereMessage);
+				stateB = IDLE;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
 		}
+		
+		
 	}
 	
 	
