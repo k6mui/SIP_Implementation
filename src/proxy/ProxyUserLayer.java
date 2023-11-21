@@ -80,7 +80,7 @@ public class ProxyUserLayer {
 		boolean sendRegisterAgain= false;
 		for (Usuario usuario : registerList ) {
 			
-			if (usuario.getExpires().after(timeNow)) {
+			if (timeNow.after(usuario.getExpires())) {
 				usuario.setActive(false);
 				if(usuario.getUri().equals(inviteMessage.getFromUri())) {
 					sendRegisterAgain = true;
