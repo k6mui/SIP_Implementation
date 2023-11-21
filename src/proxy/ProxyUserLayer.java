@@ -47,6 +47,7 @@ public class ProxyUserLayer {
 		int originPort = Integer.parseInt(originParts[1]);
 		String destAddress = null;
 		int destPort = 0;
+		Date timeNow = new Date();
 		
 		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 
@@ -76,7 +77,16 @@ public class ProxyUserLayer {
 		inviteMessage.setVias(vias);
 		
 		boolean bothOK = true;
+		boolean sendRegisterAgain= false;
 		for (Usuario usuario : registerList ) {
+			
+			if (usuario.getExpires().after(timeNow)) {
+				usuario.setActive(false);
+				if(usuario.getUri().equals(inviteMessage.getFromUri())) {
+					sendRegisterAgain = true;
+				}
+			}
+			
 			if (!usuario.isActive()) {
 				bothOK = false;
 			}
