@@ -2,6 +2,7 @@ package ua;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.Scanner;
 
 import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
@@ -37,6 +38,7 @@ public class UaTransactionLayer {
 			case IDLE:
 				userLayer.onInviteReceived(inviteMessage);
 				state = PROCC;
+				userLayer.startListeningKeyboard();
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -51,11 +53,15 @@ public class UaTransactionLayer {
 				break;	
 			case CALL:
 				userLayer.onOkReceived(okMessage);
+				userLayer.commandACK();
 				state = TERM;
+				break;
 			case PROCC:
 				userLayer.onOkReceived(okMessage);
 				System.out.println("Llamada iniciada");
+				userLayer.commandACK();
 				state = TERM;
+				break;
 // *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -71,6 +77,7 @@ public class UaTransactionLayer {
 			case CALL:
 				userLayer.onNFReceived();
 				state = COMPL;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -81,6 +88,7 @@ public class UaTransactionLayer {
 			case CALL:
 				userLayer.onTrying();
 				state = PROCC;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -91,9 +99,11 @@ public class UaTransactionLayer {
 			case CALL:
 				userLayer.onRinging(ringingMessage);
 				state = PROCC;
+				break;
 			case PROCC:
 				userLayer.onRinging(ringingMessage);
 				state = PROCC;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -103,12 +113,14 @@ public class UaTransactionLayer {
 			switch (state) {
 			case PROCC:
 				userLayer.onBusy(busyHereMessage);
-				// Enviar ACK
+				userLayer.commandACK();
 				state = COMPL;
+				break;
 			case CALL:
 				userLayer.onBusy(busyHereMessage);
-				// Enviar ACK
+				userLayer.commandACK();
 				state = COMPL;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;

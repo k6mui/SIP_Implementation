@@ -175,7 +175,7 @@ public class ProxyUserLayer {
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.remove(vias.lastIndexOf(vias));
+		vias.get(0);
 		ringingMessage.setVias(vias);
 
 		for (Usuario usuario : registerList ) {
@@ -194,7 +194,7 @@ public class ProxyUserLayer {
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.remove(vias.lastIndexOf(vias));
+		vias.get(0);
 		okMessage.setVias(vias);
 		
 		for (Usuario usuario : registerList ) {
@@ -213,7 +213,7 @@ public class ProxyUserLayer {
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.remove(vias.lastIndexOf(vias));
+		vias.get(0);
 		busyHere.setVias(vias);
 		
 		for (Usuario usuario : registerList ) {

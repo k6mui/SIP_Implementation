@@ -25,8 +25,8 @@ public class UaUserLayer {
 	private static final int CALL = 1;
 	private static final int PROCC = 2;
 	private static final int COMPL = 3;
-	private int state = IDLE;
-
+	private static final int TERM = 4;
+	
 	public static final ArrayList<Integer> RTPFLOWS = new ArrayList<Integer>(
 			Arrays.asList(new Integer[] { 96, 97, 98 }));
 
@@ -110,7 +110,7 @@ public class UaUserLayer {
 		message200.setContact(inviteMessage.getContact());
 		message200.setContentLength(0);
 		message200.setVias(vias);
-		message200.setSdp(null);
+		message200.setSdp(inviteMessage.getSdp());
 		
 				
 		message486.setCallId(inviteMessage.getCallId());
@@ -167,18 +167,22 @@ public class UaUserLayer {
 
 	private void prompt() {
 		System.out.println("");
-		switch (transactionLayer.getState()) {
+		int estado = transactionLayer.getState();
+		switch (estado) {
 		case IDLE:
 			promptIdle();
+			break;
+		case CALL:
 			break;
 		case PROCC:
 			System.out.println("Enter [YES/NO] to accept/decline the call: ");
 			break;
-		case COMPL:
-			
+		case COMPL:	
+			break;
+		case TERM:
 			break;
 		default:
-			throw new IllegalStateException("Unexpected state: " + state);
+			throw new IllegalStateException("Unexpected state: " + estado);
 		}
 		System.out.print("> ");
 	}
@@ -190,12 +194,8 @@ public class UaUserLayer {
 	private void command(String line) throws IOException {
 		if (line.startsWith("INVITE")) {
 			commandInvite(line);
-		} else {
-			System.out.println("Bad command");
 		}
-		
-// *Si le pongo al principio por consola antes de que llegue nada YES mandará un 200 ok?*
-		if (line.startsWith("YES")) {
+		else if (line.startsWith("YES")) {
 			command200(line);
 		}else if (line.startsWith("NO")){
 			command486(line);
@@ -282,7 +282,7 @@ public class UaUserLayer {
 
 	}
 	
-	private void commandACK() throws IOException {
+	public void commandACK() throws IOException {
 		 ACKMessage ackMessage = new ACKMessage();
 		 ackMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
 		 ackMessage.setMaxForwards(70);

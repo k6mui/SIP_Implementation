@@ -66,6 +66,7 @@ public class ProxyTransactionLayer {
 			case PROCC:
 				userLayer.onOkMessage(okMessage);
 				stateB = TERM;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -80,6 +81,7 @@ public class ProxyTransactionLayer {
 			case PROCC:
 				userLayer.onBusy(busyHereMessage);
 				stateB = TERM;
+				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
