@@ -17,6 +17,7 @@ public class UaTransactionLayer {
 	private static final int CALL = 1;
 	private static final int PROCC = 2;
 	private static final int COMPL = 3;
+	private static final int TERM = 4;
 	private int state = IDLE;
 
 	private UaUserLayer userLayer;
@@ -41,26 +42,26 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else if (sipMessage instanceof OKMessage){ /* to do -------------------*/
+		} else if (sipMessage instanceof OKMessage){ /*%%%%%%%%%%%%%%%%%To do%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 			OKMessage okMessage = (OKMessage) sipMessage;
 			switch (state) {
 			case IDLE:
 				userLayer.onOkReceived(okMessage);
 				userLayer.setResponseRegister(true);
-				break;
-				
+				break;	
 			case CALL:
 				userLayer.onOkReceived(okMessage);
-				state = IDLE;
+				state = TERM;
 			case PROCC:
 				userLayer.onOkReceived(okMessage);
 				System.out.println("Llamada iniciada");
-				state = IDLE;
+				state = TERM;
+// *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else if (sipMessage instanceof NotFoundMessage){ /* to do -------------------*/
+		} else if (sipMessage instanceof NotFoundMessage){ 
 			NotFoundMessage notFoundMessage = (NotFoundMessage) sipMessage;
 			switch (state) {
 			case IDLE:
@@ -84,11 +85,14 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else if (sipMessage instanceof RingingMessage) {
+		} else if (sipMessage instanceof RingingMessage) { /*%%%%%%%%%%%%%%%%%To do%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 			RingingMessage ringingMessage = (RingingMessage) sipMessage;
 			switch (state) {
 			case CALL:
-				userLayer.onTrying();
+				userLayer.onRinging(ringingMessage);
+				state = PROCC;
+			case PROCC:
+				userLayer.onRinging(ringingMessage);
 				state = PROCC;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -134,7 +138,7 @@ public class UaTransactionLayer {
 	
 	public void send200(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
-		state=IDLE;
+		state=TERM;
 	}
 	
 	public void send486(SIPMessage sipMessage) throws IOException {
@@ -147,9 +151,9 @@ public class UaTransactionLayer {
 		state = COMPL;
 	}
 	
-	
-	
-	
+	public void sendACK(SIPMessage sipMessage) throws IOException {
+		transportLayer.sendToProxy(sipMessage);
+	}
 	
 	public int getState() {
 		return state;

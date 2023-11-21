@@ -11,10 +11,11 @@ import mensajesSIP.RingingMessage;
 import mensajesSIP.SIPMessage;
 
 public class ProxyTransactionLayer {
-	private static final int IDLE = 0; 	/*to do: Completar con los estados que faltan*/
+	private static final int IDLE = 0; 	
 	private static final int CALL = 1;
 	private static final int PROCC = 2;
 	private static final int COMPL = 3;
+	private static final int TERM = 4;
 	private int stateA = IDLE;
 	private int stateB = IDLE;
 
@@ -60,11 +61,11 @@ public class ProxyTransactionLayer {
 			switch (stateB) {
 			case CALL:
 				userLayer.onOkMessage(okMessage);
-				stateB = IDLE;
+				stateB = TERM;
 				break;
 			case PROCC:
 				userLayer.onOkMessage(okMessage);
-				stateB = IDLE;
+				stateB = TERM;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -74,11 +75,11 @@ public class ProxyTransactionLayer {
 			switch (stateB) {
 			case CALL:
 				userLayer.onBusy(busyHereMessage);
-				stateB = IDLE;
+				stateB = TERM;
 				break;
 			case PROCC:
 				userLayer.onBusy(busyHereMessage);
-				stateB = IDLE;
+				stateB = TERM;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;

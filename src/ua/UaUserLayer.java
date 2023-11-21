@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import common.FindMyIPv4;
+import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
@@ -16,6 +17,7 @@ import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
 import mensajesSIP.RingingMessage;
 import mensajesSIP.SDPMessage;
+import mensajesSIP.SIPMessage;
 import mensajesSIP.TryingMessage;
 
 public class UaUserLayer {
@@ -39,10 +41,12 @@ public class UaUserLayer {
 	private boolean responseRegister;
 	private String uri;
 	private String proxyAdd;
+	private String uriDest;
 	
 	private RingingMessage message180;
 	private OKMessage message200;
 	private BusyHereMessage message486;
+
 	
 
 	private Process vitextClient = null;
@@ -61,6 +65,7 @@ public class UaUserLayer {
 		this.message180 = new RingingMessage();
 		this.message200 = new OKMessage();
 		this.message486 = new BusyHereMessage();
+		this.uriDest = null;
 	}
 
 	public boolean isResponseRegister() {
@@ -189,6 +194,7 @@ public class UaUserLayer {
 			System.out.println("Bad command");
 		}
 		
+// *Si le pongo al principio por consola antes de que llegue nada YES mandará un 200 ok?*
 		if (line.startsWith("YES")) {
 			command200(line);
 		}else if (line.startsWith("NO")){
@@ -202,7 +208,10 @@ public class UaUserLayer {
 		//stopVitextServer();
 		//stopVitextClient();
 		
+		
 		String[] args = line.split(" ");
+		
+		this.uriDest = args[1];
 		
 		System.out.println("Inviting...");
 
@@ -269,6 +278,23 @@ public class UaUserLayer {
 	
 	private void command486(String line) throws IOException {
 		transactionLayer.send486(message486);
+		
+
+	}
+	
+	private void commandACK() throws IOException {
+		 ACKMessage ackMessage = new ACKMessage();
+		 ackMessage.setVias(new ArrayList<String>(Arrays.asList(this.myAddress + ":" + this.listenPort)));
+		 ackMessage.setMaxForwards(70);
+		 ackMessage.setFromName(extractName(uri)); 
+		 ackMessage.setFromUri("sip:"+uri);
+		 ackMessage.setcSeqNumber("1");
+		 ackMessage.setcSeqStr("ACK");
+		 ackMessage.setContentLength(0);
+		 ackMessage.setToUri("sip:"+this.uriDest); 
+		 ackMessage.setToName(extractName(this.uriDest)); 
+
+		transactionLayer.sendACK(ackMessage);
 
 	}
 	
