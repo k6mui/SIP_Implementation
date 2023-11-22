@@ -153,10 +153,10 @@ public class UaUserLayer {
 	public void startListeningKeyboard() {
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				prompt();
-				String line = scanner.nextLine();
-				if (!line.isEmpty()) {
-					command(line);
+				prompt(); // Muestra al usuario lo que tiene que mostrar segun el estado de transacion layer
+				String line = scanner.nextLine(); // Lee la línea completa de entrada del usuario 'line'
+				if (!line.isEmpty()) { // Si la linea no está vacia se llama a command(line)
+					command(line); // Procesa el comando ingresado
 				}
 			}
 		} catch (Exception e) {
@@ -174,7 +174,7 @@ public class UaUserLayer {
 			break;
 		case CALL:
 			break;
-		case PROCC:
+		case PROCC: 
 			System.out.println("Enter [YES/NO] to accept/decline the call: ");
 			break;
 		case COMPL:	
@@ -243,11 +243,9 @@ public class UaUserLayer {
 		transactionLayer.call(inviteMessage);
 	}
 	
-	/*TO DO*/
-	public void commandRegister(String line) throws IOException { // Preguntar al profe !!!!!!!!!!!!!
-		//stopVitextServer();
-		//stopVitextServer();    /*No se si mantener esto*/
-		
+	/*DONE*/
+	public void commandRegister(String line) throws IOException { 
+
 		System.out.println("Registering...");
 		
 		
