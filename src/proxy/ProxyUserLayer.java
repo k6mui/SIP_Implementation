@@ -3,9 +3,11 @@ package proxy;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import common.FindMyIPv4;
+import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
@@ -170,16 +172,16 @@ public class ProxyUserLayer {
 	}
 	
 	public void onRingingMessage(RingingMessage ringingMessage) throws IOException {
-		ArrayList<String> vias = ringingMessage.getVias();
-		
+		ArrayList<String> vias = new ArrayList<String>();
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.get(0);
+		vias.add(ringingMessage.getVias().get(0));
 		ringingMessage.setVias(vias);
+		
 
 		for (Usuario usuario : registerList ) {
-			if(usuario.getUri().equals(ringingMessage.getToUri())) {
+			if(usuario.getUri().equals(ringingMessage.getFromUri())) {
 				destAddress = usuario.getAddress();
 				destPort = usuario.getPort();
 			}
@@ -190,15 +192,16 @@ public class ProxyUserLayer {
 	}
 	
 	public void onOkMessage(OKMessage okMessage) throws IOException {
-		ArrayList<String> vias = okMessage.getVias();
+		ArrayList<String> vias = new ArrayList<String>();
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.get(0);
+		vias.add(okMessage.getVias().get(0));
 		okMessage.setVias(vias);
 		
+		
 		for (Usuario usuario : registerList ) {
-			if(usuario.getUri().equals(okMessage.getToUri())) {
+			if(usuario.getUri().equals(okMessage.getFromUri())) {
 				destAddress = usuario.getAddress();
 				destPort = usuario.getPort();
 			}
@@ -209,15 +212,15 @@ public class ProxyUserLayer {
 	}
 	
 	public void onBusy(BusyHereMessage busyHere) throws IOException {
-		ArrayList<String> vias = busyHere.getVias();
+		ArrayList<String> vias = new ArrayList<String>();
 		String destAddress = null;
 		int destPort = 0;
 		
-		vias.get(0);
+		vias.add(busyHere.getVias().get(0));
 		busyHere.setVias(vias);
 		
 		for (Usuario usuario : registerList ) {
-			if(usuario.getUri().equals(busyHere.getToUri())) {
+			if(usuario.getUri().equals(busyHere.getFromUri())) {
 				destAddress = usuario.getAddress();
 				destPort = usuario.getPort();
 			}
@@ -225,6 +228,38 @@ public class ProxyUserLayer {
 		
 		transactionLayer.sendResponse(busyHere, destAddress, destPort);
 		
+	}
+	
+	public void commandACK(BusyHereMessage busyhere) throws IOException {
+		 ACKMessage ackMessage = new ACKMessage();
+		 
+		 ArrayList<String> vias = new ArrayList<String>();
+		 String destAddress = null;
+		 int destPort = 0;
+			
+		 vias.add(busyhere.getVias().get(2));
+		 busyhere.setVias(vias);
+		 
+		 for (Usuario usuario : registerList ) {
+				if(usuario.getUri().equals(busyhere.getToUri())) {
+					destAddress = usuario.getAddress();
+					destPort = usuario.getPort();
+				}
+		}
+			
+		 ackMessage.setDestination("sip:" + busyhere.getToUri());
+		 ackMessage.setVias(vias);
+		 ackMessage.setMaxForwards(70);
+		 ackMessage.setFromName(busyhere.getFromName()); 
+		 ackMessage.setFromUri(busyhere.getFromUri());
+		 ackMessage.setcSeqNumber("1");                      //*  ******************   PREGUNTAR MARIO*/
+		 ackMessage.setcSeqStr("ACK");
+		 ackMessage.setContentLength(0);
+		 ackMessage.setToUri(busyhere.getToUri()); 
+		 ackMessage.setToName(busyhere.getToName()); 
+
+		 transactionLayer.sendResponse(ackMessage, destAddress, destPort);
+
 	}
 
 	

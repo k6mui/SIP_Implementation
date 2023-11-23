@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.Scanner;
 
+import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
+import mensajesSIP.ByeMessage;
 import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
@@ -20,6 +22,8 @@ public class UaTransactionLayer {
 	private static final int COMPL = 3;
 	private static final int TERM = 4;
 	private int state = IDLE;
+	
+	private int WhoIam = 0; // 1 para llamante; 2 para llamado
 
 	private UaUserLayer userLayer;
 	private UaTransportLayer transportLayer;
@@ -37,8 +41,8 @@ public class UaTransactionLayer {
 			switch (state) {
 			case IDLE:
 				userLayer.onInviteReceived(inviteMessage);
+				WhoIam = 2;
 				state = PROCC;
-				userLayer.startListeningKeyboard();
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -53,14 +57,17 @@ public class UaTransactionLayer {
 				break;	
 			case CALL:
 				userLayer.onOkReceived(okMessage);
-				userLayer.commandACK();
+				userLayer.commandACK_OK(okMessage);
 				state = TERM;
 				break;
 			case PROCC:
 				userLayer.onOkReceived(okMessage);
-				System.out.println("Llamada iniciada");
-				userLayer.commandACK();
+				System.out.println("LLAMADA INICIADA");
+				userLayer.commandACK_OK(okMessage);
 				state = TERM;
+				break;
+			case TERM:
+				System.out.println("FIN DE LLAMADA");
 				break;
 // *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
 			default:
@@ -76,8 +83,13 @@ public class UaTransactionLayer {
 				break;
 			case CALL:
 				userLayer.onNFReceived();
+				userLayer.commandACK();
 				state = COMPL;
 				break;
+			case PROCC:
+				userLayer.onNFReceived();
+				userLayer.commandACK();
+				state = COMPL;
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -126,6 +138,34 @@ public class UaTransactionLayer {
 				break;
 			}
 			}
+		 else if (sipMessage instanceof ACKMessage){ 
+			 ACKMessage ackMessage = (ACKMessage) sipMessage;
+				switch (state) {
+				case COMPL:
+					System.out.println("ACK received from Proxy");
+					state = TERM;
+					break;
+				case TERM:
+					System.out.println("ACK received from " + ackMessage.getFromName());
+					System.out.println("LLAMADA INICIADA");
+					break;
+				default:
+					System.err.println("Unexpected message, throwing away");
+					break;
+				}
+		 }
+		 else if (sipMessage instanceof ByeMessage){ 
+			 ByeMessage byeMessage = (ByeMessage) sipMessage;
+				switch (state) {
+				case TERM:
+					System.out.println("FIN DE LLAMADA");
+					userLayer.onByeReceived(byeMessage);
+					break;
+				default:
+					System.err.println("Unexpected message, throwing away");
+					break;
+				}
+		 }
 		else {
 			System.err.println("Unexpected message, throwing away");
 		}
@@ -137,6 +177,7 @@ public class UaTransactionLayer {
 
 	public void call(InviteMessage inviteMessage) throws IOException {
 		state=CALL;
+		WhoIam = 1;
 		transportLayer.sendToProxy(inviteMessage);
 	}
 	/*DONE*/
@@ -153,6 +194,10 @@ public class UaTransactionLayer {
 		state=TERM;
 	}
 	
+	public void send200_direct(SIPMessage sipMessage, String addr, int port) throws IOException {
+		transportLayer.send(sipMessage, addr , port);
+	}
+	
 	public void send486(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
 		state=COMPL;
@@ -163,12 +208,30 @@ public class UaTransactionLayer {
 		state = COMPL;
 	}
 	
+	public void sendACK_OK(SIPMessage sipMessage, String addr, int port) throws IOException {
+		transportLayer.send(sipMessage, addr , port);
+	}
+	
 	public void sendACK(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
 	}
 	
+	public void sendBYE(SIPMessage sipMessage, String addr, int port) throws IOException {
+		transportLayer.send(sipMessage, addr , port);
+	}
+	
 	public int getState() {
 		return state;
+	}
+
+
+	public int getWhoIam() {
+		return WhoIam;
+	}
+
+
+	public void setWhoIam(int whoIam) {
+		WhoIam = whoIam;
 	}
 
 }

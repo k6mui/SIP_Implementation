@@ -19,6 +19,23 @@ public class ProxyTransactionLayer {
 	private int stateA = IDLE;
 	private int stateB = IDLE;
 
+	public int getStateA() {
+		return stateA;
+	}
+
+	public void setStateA(int stateA) {
+		this.stateA = stateA;
+	}
+
+	public int getStateB() {
+		return stateB;
+	}
+
+	public void setStateB(int stateB) {
+		this.stateB = stateB;
+	}
+
+
 	private ProxyUserLayer userLayer;
 	private ProxyTransportLayer transportLayer;
 
@@ -76,10 +93,12 @@ public class ProxyTransactionLayer {
 			switch (stateB) {
 			case CALL:
 				userLayer.onBusy(busyHereMessage);
+				userLayer.commandACK(busyHereMessage);
 				stateB = TERM;
 				break;
 			case PROCC:
 				userLayer.onBusy(busyHereMessage);
+				userLayer.commandACK(busyHereMessage);
 				stateB = TERM;
 				break;
 			default:
