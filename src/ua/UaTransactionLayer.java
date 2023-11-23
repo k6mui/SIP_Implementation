@@ -66,10 +66,13 @@ public class UaTransactionLayer {
 				userLayer.commandACK_OK(okMessage);
 				state = TERM;
 				break;
+<<<<<<< HEAD
 			case TERM:
 				System.out.println("FIN DE LLAMADA");
 				break;
 // *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
+=======
+>>>>>>> f682160b8ed39c744f3be6b06eebdc913b7bd063
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -79,7 +82,7 @@ public class UaTransactionLayer {
 			switch (state) {
 			case IDLE:
 				userLayer.onNFReceived();
-				userLayer.setResponseRegister(true);
+				userLayer.setResponseRegister(true); // False??
 				break;
 			case CALL:
 				userLayer.onNFReceived();
