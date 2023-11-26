@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import common.FindMyIPv4;
@@ -16,6 +18,7 @@ import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RequestTimeoutMessage;
 import mensajesSIP.RingingMessage;
 import mensajesSIP.SDPMessage;
 import mensajesSIP.SIPMessage;
@@ -45,13 +48,15 @@ public class UaUserLayer {
 	private String uriDest;
 	private String addrDest;
 	private int portDest;
+	private int cSeq;
 	
 	private RingingMessage message180;
 	private OKMessage message200;
 	private BusyHereMessage message486;
 	private ByeMessage messageBYE;
+	private RequestTimeoutMessage message408;
 
-	
+	Timer timer408 = new Timer();
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
@@ -69,8 +74,10 @@ public class UaUserLayer {
 		this.message180 = new RingingMessage();
 		this.message200 = new OKMessage();
 		this.message486 = new BusyHereMessage();
+		this.message408 = new RequestTimeoutMessage();
 		this.uriDest = null;
 		this.messageBYE = new ByeMessage();
+		this.cSeq = 0;
 	}
 
 	public boolean isResponseRegister() {
@@ -98,6 +105,10 @@ public class UaUserLayer {
 		this.addrDest = args[0];
 		this.portDest = Integer.parseInt(args[1]);
 		
+		if (this.debug) {
+			System.out.println(inviteMessage.toStringMessage());
+		}
+		
 		RingingMessage message180 = new RingingMessage();
 		message180.setCallId(inviteMessage.getCallId());
 		message180.setcSeqNumber(inviteMessage.getcSeqNumber());
@@ -107,7 +118,6 @@ public class UaUserLayer {
 		message180.setToName(inviteMessage.getToName());
 		message180.setToUri(inviteMessage.getToUri());
 		message180.setContentLength(0);
-		vias.add(myAddress + ":" + listenPort);
 		message180.setVias(vias); 
 		
 		transactionLayer.send180(message180);
@@ -135,7 +145,30 @@ public class UaUserLayer {
 		message486.setContentLength(0);
 		message486.setVias(vias);
 		
-
+		message408.setCallId(inviteMessage.getCallId());
+		message408.setcSeqNumber(inviteMessage.getcSeqNumber());
+		message408.setcSeqStr(inviteMessage.getcSeqStr());
+		message408.setFromName(inviteMessage.getFromName());
+		message408.setFromUri(inviteMessage.getFromUri());
+		message408.setToName(inviteMessage.getToName());
+		message408.setToUri(inviteMessage.getToUri());
+		message408.setContentLength(0);
+		message408.setVias(vias);
+		
+		
+		TimerTask task408 = new TimerTask() {
+            public void run() {
+                // Place the action you want to execute after 2 seconds here.
+            	try {
+            		transactionLayer.send408(message408);
+    			} catch (IOException e) {
+    				e.printStackTrace();
+    			};
+            }
+        };
+        timer408.schedule(task408, 10000); 
+		
+	
 	}
 	
 	public void onByeReceived(ByeMessage messageBye) throws IOException {
@@ -154,6 +187,10 @@ public class UaUserLayer {
 		message200.setContact(myAddress + ":" + listenPort);
 		message200.setContentLength(0);
 		message200.setVias(vias);
+		
+		if (this.debug) {
+			System.out.println(messageBye.toStringMessage());
+		}
 	
 		transactionLayer.send200_direct(message200, this.addrDest , this.portDest );
 	}
@@ -165,21 +202,42 @@ public class UaUserLayer {
 		this.addrDest = args[0];
 		this.portDest = Integer.parseInt(args[1]);
 		System.out.println("Received 200 OK from " + oKMessage.getFromName());
+		oKMessage.setSdp(null);
+		
+		if (this.debug) {
+			System.out.println(oKMessage.toStringMessage());
+		}
 	}
 	
-	public void onNFReceived( ) throws IOException {
+	public void onNFReceived(NotFoundMessage messageNotFound) throws IOException {
 		System.out.println("Received 404 Not Found ");
+		
+		if (this.debug) {
+			System.out.println(messageNotFound.toStringMessage());
+		}
 	}
 	
-	public void onTrying( ) throws IOException {
+	public void onTrying(TryingMessage messageTrying) throws IOException {
 		System.out.println("Received 100 Trying Message :)");
+		
+		if (this.debug) {
+			System.out.println(messageTrying.toStringMessage());
+		}
 	}
 	public void onRinging(RingingMessage ringingMessage ) throws IOException {
-		System.out.println("PIII PIII PIII PIII --->  LLamando a " + ringingMessage.getToName());
+		System.out.println("PIII PIII PIII PIII --->  LLamando a " + ringingMessage.getToName() + " (180 Ringing)");
+		
+		if (this.debug) {
+			System.out.println(ringingMessage.toStringMessage());
+		}
 	}
 	
 	public void onBusy(BusyHereMessage busyHereMessage) throws IOException {
-		System.out.println(busyHereMessage.getToName() + "Esta buuuuusy :(" );
+		System.out.println(busyHereMessage.getToName() + " esta buuuuusy :(  (486 Busy Here)" );
+		
+		if (this.debug) {
+			System.out.println(busyHereMessage.toStringMessage());
+		}
 	}
 	/* To Do*/
 	
@@ -193,6 +251,7 @@ public class UaUserLayer {
 				prompt(); // Muestra al usuario lo que tiene que mostrar segun el estado de transacion layer
 				String line = scanner.nextLine(); // Lee la línea completa de entrada del usuario 'line'
 				if (!line.isEmpty()) { // Si la linea no está vacia se llama a command(line)
+					
 					command(line); // Procesa el comando ingresado
 				}
 			}
@@ -212,15 +271,9 @@ public class UaUserLayer {
 			break;
 		case CALL:
 			break;
-<<<<<<< HEAD
 		case PROCC:
 			if (whoiam==2) {
 				System.out.println("Enter [YES/NO] to accept/decline the call: ");}
-=======
-		case PROCC: 
-			System.out.println("Enter [YES/NO] to accept/decline the call: ");
->>>>>>> f682160b8ed39c744f3be6b06eebdc913b7bd063
-			break;
 		case COMPL:	
 			break;
 		case TERM:
@@ -241,8 +294,10 @@ public class UaUserLayer {
 			commandInvite(line);
 		}
 		else if (line.startsWith("YES")) {
+			timer408.cancel();
 			command200(line);
 		}else if (line.startsWith("NO")){
+			timer408.cancel();
 			command486(line);
 		}else if (line.startsWith("BYE")){
 			commandBYE(line);
@@ -281,7 +336,7 @@ public class UaUserLayer {
 		inviteMessage.setFromName(extractName(uri));
 		inviteMessage.setFromUri("sip:" + uri);
 		inviteMessage.setCallId(callId);
-		inviteMessage.setcSeqNumber("1");
+		inviteMessage.setcSeqNumber(String.valueOf(cSeq++));
 		inviteMessage.setcSeqStr(args[0]);    // Poner en Mayuscula el INVITE
 		inviteMessage.setContact(myAddress + ":" + listenPort);
 		inviteMessage.setContentType("application/sdp");
@@ -300,6 +355,7 @@ public class UaUserLayer {
 		
 		
 		callId = UUID.randomUUID().toString(); 
+		
 
 		RegisterMessage registerMessage = new RegisterMessage();
 		registerMessage.setDestination("sip:" + proxyAdd  + "@SMA");
@@ -310,7 +366,7 @@ public class UaUserLayer {
 		registerMessage.setFromName(extractName(uri)); 
 		registerMessage.setFromUri("sip:"+uri);
 		registerMessage.setCallId(callId);
-		registerMessage.setcSeqNumber("1");
+		registerMessage.setcSeqNumber(String.valueOf(cSeq++));
 		registerMessage.setcSeqStr("REGISTER");
 		registerMessage.setContact(myAddress + ":" + listenPort);
 		registerMessage.setExpires(this.t_expires);
@@ -341,7 +397,7 @@ public class UaUserLayer {
 		 ackMessage.setMaxForwards(70);
 		 ackMessage.setFromName(extractName(uri)); 
 		 ackMessage.setFromUri("sip:"+uri);
-		 ackMessage.setcSeqNumber("1");
+		 ackMessage.setcSeqNumber(String.valueOf(cSeq++));
 		 ackMessage.setcSeqStr("ACK");
 		 ackMessage.setContentLength(0);
 		 ackMessage.setToUri("sip:"+this.uriDest); 
@@ -359,7 +415,7 @@ public class UaUserLayer {
 		 ackMessage.setMaxForwards(70);
 		 ackMessage.setFromName(extractName(uri)); 
 		 ackMessage.setFromUri("sip:"+uri);
-		 ackMessage.setcSeqNumber("1");                      //*  ******************   PREGUNTAR MARIO*/
+		 ackMessage.setcSeqNumber(String.valueOf(cSeq++));                      //*  ******************   PREGUNTAR MARIO*/
 		 ackMessage.setcSeqStr("ACK");
 		 ackMessage.setContentLength(0);
 		 ackMessage.setToUri("sip:"+this.uriDest); 
@@ -414,5 +470,9 @@ public class UaUserLayer {
 		} else {
 			return "Error: Not @";
 		}
+	}
+
+	public void onReq(RequestTimeoutMessage requestM) {
+		System.out.println(requestM.getToName() + " no responde (408)" );	
 	}
 }

@@ -3,6 +3,8 @@ package ua;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
@@ -11,8 +13,10 @@ import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RequestTimeoutMessage;
 import mensajesSIP.RingingMessage;
 import mensajesSIP.SIPMessage;
+import mensajesSIP.ServiceUnavailableMessage;
 import mensajesSIP.TryingMessage;
 
 public class UaTransactionLayer {
@@ -27,13 +31,16 @@ public class UaTransactionLayer {
 
 	private UaUserLayer userLayer;
 	private UaTransportLayer transportLayer;
-
+	
+	Timer timer486 = new Timer();
+	Timer timerB = new Timer();
+	
+	
 	public UaTransactionLayer(int listenPort, String proxyAddress, int proxyPort, UaUserLayer userLayer)
 			throws SocketException {
 		this.userLayer = userLayer;
 		this.transportLayer = new UaTransportLayer(listenPort, proxyAddress, proxyPort, this);
 	}
-	
 	
 	public void onMessageReceived(SIPMessage sipMessage) throws IOException {
 		if (sipMessage instanceof InviteMessage) {
@@ -66,13 +73,11 @@ public class UaTransactionLayer {
 				userLayer.commandACK_OK(okMessage);
 				state = TERM;
 				break;
-<<<<<<< HEAD
 			case TERM:
 				System.out.println("FIN DE LLAMADA");
 				break;
 // *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
-=======
->>>>>>> f682160b8ed39c744f3be6b06eebdc913b7bd063
+
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -81,18 +86,30 @@ public class UaTransactionLayer {
 			NotFoundMessage notFoundMessage = (NotFoundMessage) sipMessage;
 			switch (state) {
 			case IDLE:
-				userLayer.onNFReceived();
+				userLayer.onNFReceived(notFoundMessage);
 				userLayer.setResponseRegister(true); // False??
 				break;
 			case CALL:
-				userLayer.onNFReceived();
+				userLayer.onNFReceived(notFoundMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				TimerTask task404 = new TimerTask() {
+		            public void run() {
+		                state= IDLE;
+		            }
+		        };
+		        timerB.schedule(task404, 1000);
 				break;
 			case PROCC:
-				userLayer.onNFReceived();
+				userLayer.onNFReceived(notFoundMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				TimerTask task404_2 = new TimerTask() {
+		            public void run() {
+		                state= IDLE;
+		            }
+		        };
+		        timerB.schedule(task404_2, 1000);
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -101,7 +118,7 @@ public class UaTransactionLayer {
 			TryingMessage tryingMessage = (TryingMessage) sipMessage;
 			switch (state) {
 			case CALL:
-				userLayer.onTrying();
+				userLayer.onTrying(tryingMessage);
 				state = PROCC;
 				break;
 			default:
@@ -130,12 +147,64 @@ public class UaTransactionLayer {
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				TimerTask taskB = new TimerTask() {
+		            public void run() {
+		                state= IDLE;;
+		            }
+		        };
+		        timerB.schedule(taskB, 1000); //
 				break;
 			case CALL:
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				TimerTask taskB_2 = new TimerTask() {
+		            public void run() {
+		                state= IDLE;;
+		            }
+		        };
+		        timerB.schedule(taskB_2, 1000); //
 				break;
+				
+			case COMPL:
+				userLayer.commandACK();
+				state =COMPL;
+			default:
+				System.err.println("Unexpected message, throwing away");
+				break;
+			}
+			}
+		else if (sipMessage instanceof RequestTimeoutMessage){ /* to do -------------------*/
+			RequestTimeoutMessage requestM = (RequestTimeoutMessage) sipMessage;
+			switch (state) {
+			case PROCC:
+				userLayer.onReq(requestM);
+				userLayer.commandACK();
+				state = COMPL;
+				TimerTask task408 = new TimerTask() {
+		            public void run() {
+		                state= IDLE;
+		            }
+		        };
+		        timerB.schedule(task408, 1000); //
+				break;
+			case CALL:
+				userLayer.onReq(requestM);
+				userLayer.commandACK();
+				state = COMPL;
+				TimerTask task408_2 = new TimerTask() {
+		            public void run() {
+		                state= IDLE;
+		            }
+		        };
+		        timerB.schedule(task408_2, 1000); //
+				break;
+				
+			case COMPL:
+				userLayer.commandACK();
+				state =COMPL;
+				break;
+				
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -145,6 +214,7 @@ public class UaTransactionLayer {
 			 ACKMessage ackMessage = (ACKMessage) sipMessage;
 				switch (state) {
 				case COMPL:
+					timer486.cancel();
 					System.out.println("ACK received from Proxy");
 					state = TERM;
 					break;
@@ -163,12 +233,24 @@ public class UaTransactionLayer {
 				case TERM:
 					System.out.println("FIN DE LLAMADA");
 					userLayer.onByeReceived(byeMessage);
+					state = IDLE;
 					break;
 				default:
 					System.err.println("Unexpected message, throwing away");
 					break;
 				}
 		 }
+		 else if (sipMessage instanceof ServiceUnavailableMessage){ /* to do -------------------*/
+				switch (state) {
+				case CALL:
+					System.err.println("503 Service Unavailable");
+					state = IDLE;
+					break;
+				default:
+					System.err.println("Unexpected message, throwing away");
+					break;
+				}
+				}
 		else {
 			System.err.println("Unexpected message, throwing away");
 		}
@@ -201,15 +283,28 @@ public class UaTransactionLayer {
 		transportLayer.send(sipMessage, addr , port);
 	}
 	
-	public void send486(SIPMessage sipMessage) throws IOException {
+	public void send408(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
 		state=COMPL;
 	}
 	
-	public void send404(SIPMessage sipMessage) throws IOException {
+	public void send486(SIPMessage sipMessage) throws IOException {
+		state=COMPL;
 		transportLayer.sendToProxy(sipMessage);
-		state = COMPL;
+        TimerTask task486 = new TimerTask() {
+            public void run() {
+                // Place the action you want to execute after 2 seconds here.
+            	try {
+            		transportLayer.sendToProxy(sipMessage);
+    			} catch (IOException e) {
+    				e.printStackTrace();
+    			};
+            }
+        };
+        timer486.scheduleAtFixedRate(task486, 200, 200);
+    	
 	}
+	
 	
 	public void sendACK_OK(SIPMessage sipMessage, String addr, int port) throws IOException {
 		transportLayer.send(sipMessage, addr , port);
@@ -221,6 +316,7 @@ public class UaTransactionLayer {
 	
 	public void sendBYE(SIPMessage sipMessage, String addr, int port) throws IOException {
 		transportLayer.send(sipMessage, addr , port);
+		state = IDLE;
 	}
 	
 	public int getState() {

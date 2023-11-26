@@ -1,6 +1,9 @@
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import ua.UaUserLayer;
 
@@ -21,18 +24,22 @@ public class UA {
 		UaUserLayer userLayer = new UaUserLayer(args[0], listenPort, proxyAddress, proxyPort, debugIndicator, t_expires);
 		
 		
-		Timer timer = new Timer();
-		TimerTask task = new TimerTask() {
-            public void run() {
-                // Place the action you want to execute after 2 seconds here.
-            	try {
-					userLayer.commandRegister(null);
-				} catch (IOException e) {
-					e.printStackTrace();
-				};
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        Runnable task = () -> {
+            try {
+                userLayer.commandRegister(null);
+                if (userLayer.isResponseRegister()) {
+                    executor.shutdown();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         };
-		
+
+        // Ejecuta la tarea cada 2 segundos
+        executor.scheduleAtFixedRate(task, 0, 2, TimeUnit.SECONDS);
+        
 		new Thread() {
 			@Override
 			public void run() {
@@ -41,14 +48,12 @@ public class UA {
 			}
 		}.start();
 		
-		/* Call commandRgister and set the timer */
-        timer.schedule(task, 2000); // 2 seconds
         
         boolean temp = true;
         while (temp) {
         	if (userLayer.isResponseRegister() == true) {
         		temp = false;
-        		timer.cancel();
+        		executor.shutdown();
         	}
         	Thread.sleep(1000);
         }

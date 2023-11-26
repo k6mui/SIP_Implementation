@@ -13,7 +13,9 @@ import mensajesSIP.InviteMessage;
 import mensajesSIP.NotFoundMessage;
 import mensajesSIP.OKMessage;
 import mensajesSIP.RegisterMessage;
+import mensajesSIP.RequestTimeoutMessage;
 import mensajesSIP.RingingMessage;
+import mensajesSIP.SDPMessage;
 import mensajesSIP.SIPMessage;
 import mensajesSIP.TryingMessage;
 
@@ -27,17 +29,21 @@ public class ProxyUserLayer {
 	private NotFoundMessage notFoundMessage;
 	private Usuario alice = new Usuario("sip:alice@SMA");
 	private Usuario bob= new Usuario("sip:bob@SMA");
+	private Usuario carlos= new Usuario("sip:carlos@SMA");
 	private int listenPort;
+	boolean debug;
 	
 	
-	public ProxyUserLayer(int listenPort) throws SocketException {
+	public ProxyUserLayer(int listenPort, boolean debug) throws SocketException {
 		this.transactionLayer = new ProxyTransactionLayer(listenPort, this);
 		this.registerList.add(alice);
 		this.registerList.add(bob);
+		this.registerList.add(carlos);
 		this.okMessage = new OKMessage();
 		this.notFoundMessage = new NotFoundMessage();
 		this.message100 = new TryingMessage();
 		this.listenPort = listenPort;
+		this.debug = debug;
 	}
 	/*to do*/
 	public boolean onInviteReceived(InviteMessage inviteMessage) throws IOException {
@@ -50,6 +56,7 @@ public class ProxyUserLayer {
 		String destAddress = null;
 		int destPort = 0;
 		Date timeNow = new Date();
+		String uri = inviteMessage.getToUri();
 		
 		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 
@@ -74,23 +81,30 @@ public class ProxyUserLayer {
 		notFoundMessage.setContentLength(0);
 		notFoundMessage.setVias(vias);
 		
-		inviteMessage.setMaxForwards(inviteMessage.getMaxForwards()+1);
+		if (this.debug) {
+			System.out.println(inviteMessage.toStringMessage());
+		}
+		
+		inviteMessage.setMaxForwards(inviteMessage.getMaxForwards()-1);
 		vias.add(myAddress + ":" + listenPort);
 		inviteMessage.setVias(vias);
 		
+		
 		boolean bothOK = true;
 		boolean sendRegisterAgain= false;
+		
 		for (Usuario usuario : registerList ) {
-			
-			if (timeNow.after(usuario.getExpires())) {
-				usuario.setActive(false);
-				if(usuario.getUri().equals(inviteMessage.getFromUri())) {
-					sendRegisterAgain = true;
-				}
-			}
-			
-			if (!usuario.isActive()) {
+			if (usuario.getUri().equals(uri) && !usuario.isActive()) {
 				bothOK = false;
+			}
+			else if (usuario.isActive()) {
+				if (timeNow.after(usuario.getExpires())) {
+					usuario.setActive(false);
+					bothOK = false;
+					if(usuario.getUri().equals(inviteMessage.getFromUri())) {
+						sendRegisterAgain = true;
+					}
+				}
 			}
 		}
 		
@@ -120,12 +134,13 @@ public class ProxyUserLayer {
 		Date currentDate = new Date();
 		
 		
-		System.out.println("Received REGISTER from " + name);
+		
 		ArrayList<String> vias = registerMessage.getVias();
 		String origin = vias.get(0);
 		String[] originParts = origin.split(":");
 		String originAddress = originParts[0];
 		int originPort = Integer.parseInt(originParts[1]);
+		
 		
 		/*DONE*/
 		okMessage.setCallId(registerMessage.getCallId());
@@ -151,18 +166,25 @@ public class ProxyUserLayer {
 		notFoundMessage.setContentLength(0);
 		notFoundMessage.setVias(vias);
 		
+		if (this.debug) {
+			System.out.println(registerMessage.toStringMessage());
+		}
+		
 		long milistoAdd = Integer.parseInt(registerMessage.getExpires())*1000; 
 		
 		Date dateExpires = new Date(currentDate.getTime()+ milistoAdd);
 
 		for (Usuario usuario : registerList ) {
 			if(usuario.getUri().equals(uri)) {
-				transactionLayer.sendResponse(okMessage, originAddress, originPort);
 				enviado = true;
-				usuario.setActive(true);
-				usuario.setAddress(originAddress);
-				usuario.setPort(originPort);
-				usuario.setExpires(dateExpires);
+				if (!usuario.isActive()){
+					System.out.println("Received REGISTER from " + name);
+					usuario.setActive(true);
+					usuario.setAddress(originAddress);
+					usuario.setPort(originPort);
+					usuario.setExpires(dateExpires);
+					transactionLayer.sendResponse(okMessage, originAddress, originPort);
+				}
 			}
 		}
 		
@@ -187,9 +209,16 @@ public class ProxyUserLayer {
 			}
 		}
 		
+		if (this.debug) {
+			System.out.println(ringingMessage.toStringMessage());
+		}
+		
 		transactionLayer.sendResponse(ringingMessage, destAddress, destPort);
 	
 	}
+	
+	
+
 	
 	public void onOkMessage(OKMessage okMessage) throws IOException {
 		ArrayList<String> vias = new ArrayList<String>();
@@ -205,6 +234,10 @@ public class ProxyUserLayer {
 				destAddress = usuario.getAddress();
 				destPort = usuario.getPort();
 			}
+		}
+		
+		if (this.debug) {
+			System.out.println(okMessage.toStringMessage());
 		}
 		
 		transactionLayer.sendResponse(okMessage, destAddress, destPort);
@@ -226,19 +259,43 @@ public class ProxyUserLayer {
 			}
 		}
 		
-		transactionLayer.sendResponse(busyHere, destAddress, destPort);
+		if (this.debug) {
+			System.out.println(busyHere.toStringMessage());
+		}
 		
+		transactionLayer.sendResponse(busyHere, destAddress, destPort);
+	}
+	
+	
+	public void onRequest(RequestTimeoutMessage requestM) throws IOException {
+		ArrayList<String> vias = new ArrayList<String>();
+		String destAddress = null;
+		int destPort = 0;
+		
+		vias.add(requestM.getVias().get(0));
+		requestM.setVias(vias);
+		
+		for (Usuario usuario : registerList ) {
+			if(usuario.getUri().equals(requestM.getFromUri())) {
+				destAddress = usuario.getAddress();
+				destPort = usuario.getPort();
+			}
+		}
+		
+		if (this.debug) {
+			System.out.println(requestM.toStringMessage());
+		}
+		
+		transactionLayer.sendResponse(requestM, destAddress, destPort);
 	}
 	
 	public void commandACK(BusyHereMessage busyhere) throws IOException {
 		 ACKMessage ackMessage = new ACKMessage();
 		 
-		 ArrayList<String> vias = new ArrayList<String>();
+		 
 		 String destAddress = null;
 		 int destPort = 0;
 			
-		 vias.add(busyhere.getVias().get(2));
-		 busyhere.setVias(vias);
 		 
 		 for (Usuario usuario : registerList ) {
 				if(usuario.getUri().equals(busyhere.getToUri())) {
@@ -247,16 +304,55 @@ public class ProxyUserLayer {
 				}
 		}
 			
-		 ackMessage.setDestination("sip:" + busyhere.getToUri());
-		 ackMessage.setVias(vias);
+		 ackMessage.setDestination(busyhere.getToUri());
+		 ackMessage.setVias(busyhere.getVias());
 		 ackMessage.setMaxForwards(70);
 		 ackMessage.setFromName(busyhere.getFromName()); 
 		 ackMessage.setFromUri(busyhere.getFromUri());
-		 ackMessage.setcSeqNumber("1");                      //*  ******************   PREGUNTAR MARIO*/
+		 ackMessage.setcSeqNumber(busyhere.getcSeqNumber()+1);                      //*  ******************   PREGUNTAR MARIO*/
 		 ackMessage.setcSeqStr("ACK");
 		 ackMessage.setContentLength(0);
 		 ackMessage.setToUri(busyhere.getToUri()); 
 		 ackMessage.setToName(busyhere.getToName()); 
+		 
+		 if (this.debug) {
+			System.out.println(ackMessage.toStringMessage());
+		 }
+
+		 transactionLayer.sendResponse(ackMessage, destAddress, destPort);
+
+	}
+	
+	
+	public void commandACK_408(RequestTimeoutMessage request) throws IOException {
+		 ACKMessage ackMessage = new ACKMessage();
+		 
+		 
+		 String destAddress = null;
+		 int destPort = 0;
+			
+		 
+		 for (Usuario usuario : registerList ) {
+				if(usuario.getUri().equals(request.getToUri())) {
+					destAddress = usuario.getAddress();
+					destPort = usuario.getPort();
+				}
+		}
+			
+		 ackMessage.setDestination(request.getToUri());
+		 ackMessage.setVias(request.getVias());
+		 ackMessage.setMaxForwards(70);
+		 ackMessage.setFromName(request.getFromName()); 
+		 ackMessage.setFromUri(request.getFromUri());
+		 ackMessage.setcSeqNumber(request.getcSeqNumber()+1);                      //*  ******************   PREGUNTAR MARIO*/
+		 ackMessage.setcSeqStr("ACK");
+		 ackMessage.setContentLength(0);
+		 ackMessage.setToUri(request.getToUri()); 
+		 ackMessage.setToName(request.getToName()); 
+		 
+		 if (this.debug) {
+		    System.out.println(ackMessage.toStringMessage());
+	     }
 
 		 transactionLayer.sendResponse(ackMessage, destAddress, destPort);
 
