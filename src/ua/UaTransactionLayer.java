@@ -50,6 +50,7 @@ public class UaTransactionLayer {
 				userLayer.onInviteReceived(inviteMessage);
 				WhoIam = 2;
 				state = PROCC;
+				System.out.println("Pasando a ---> PROCCEDING");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -66,12 +67,14 @@ public class UaTransactionLayer {
 				userLayer.onOkReceived(okMessage);
 				userLayer.commandACK_OK(okMessage);
 				state = TERM;
+				System.out.println("Pasando a ---> TERMINATED");
 				break;
 			case PROCC:
 				userLayer.onOkReceived(okMessage);
 				System.out.println("LLAMADA INICIADA");
 				userLayer.commandACK_OK(okMessage);
 				state = TERM;
+				System.out.println("Pasando a ---> TERMINATED");
 				break;
 			case TERM:
 				System.out.println("FIN DE LLAMADA");
@@ -93,9 +96,11 @@ public class UaTransactionLayer {
 				userLayer.onNFReceived(notFoundMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task404 = new TimerTask() {
 		            public void run() {
 		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task404, 1000);
@@ -104,9 +109,11 @@ public class UaTransactionLayer {
 				userLayer.onNFReceived(notFoundMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task404_2 = new TimerTask() {
 		            public void run() {
 		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task404_2, 1000);
@@ -120,6 +127,7 @@ public class UaTransactionLayer {
 			case CALL:
 				userLayer.onTrying(tryingMessage);
 				state = PROCC;
+				System.out.println("Pasando a ---> PROCCEDING");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -131,6 +139,7 @@ public class UaTransactionLayer {
 			case CALL:
 				userLayer.onRinging(ringingMessage);
 				state = PROCC;
+				System.out.println("Pasando a ---> PROCCEDING");
 				break;
 			case PROCC:
 				userLayer.onRinging(ringingMessage);
@@ -147,9 +156,11 @@ public class UaTransactionLayer {
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask taskB = new TimerTask() {
 		            public void run() {
-		                state= IDLE;;
+		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(taskB, 1000); //
@@ -158,9 +169,11 @@ public class UaTransactionLayer {
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask taskB_2 = new TimerTask() {
 		            public void run() {
-		                state= IDLE;;
+		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(taskB_2, 1000); //
@@ -169,6 +182,7 @@ public class UaTransactionLayer {
 			case COMPL:
 				userLayer.commandACK();
 				state =COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 			default:
 				System.err.println("Unexpected message, throwing away");
 				break;
@@ -181,9 +195,11 @@ public class UaTransactionLayer {
 				userLayer.onReq(requestM);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task408 = new TimerTask() {
 		            public void run() {
 		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task408, 1000); //
@@ -192,9 +208,11 @@ public class UaTransactionLayer {
 				userLayer.onReq(requestM);
 				userLayer.commandACK();
 				state = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task408_2 = new TimerTask() {
 		            public void run() {
 		                state= IDLE;
+		        		System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task408_2, 1000); //
@@ -203,6 +221,7 @@ public class UaTransactionLayer {
 			case COMPL:
 				userLayer.commandACK();
 				state =COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				break;
 				
 			default:
@@ -217,6 +236,7 @@ public class UaTransactionLayer {
 					timer486.cancel();
 					System.out.println("ACK received from Proxy");
 					state = TERM;
+					System.out.println("Pasando a ---> TERMINATED");
 					break;
 				case TERM:
 					System.out.println("ACK received from " + ackMessage.getFromName());
@@ -234,6 +254,7 @@ public class UaTransactionLayer {
 					System.out.println("FIN DE LLAMADA");
 					userLayer.onByeReceived(byeMessage);
 					state = IDLE;
+					System.out.println("Pasando a ---> IDLE");
 					break;
 				default:
 					System.err.println("Unexpected message, throwing away");
@@ -245,6 +266,7 @@ public class UaTransactionLayer {
 				case CALL:
 					System.err.println("503 Service Unavailable");
 					state = IDLE;
+					System.out.println("Pasando a ---> IDLE");
 					break;
 				default:
 					System.err.println("Unexpected message, throwing away");
@@ -262,6 +284,7 @@ public class UaTransactionLayer {
 
 	public void call(InviteMessage inviteMessage) throws IOException {
 		state=CALL;
+		System.out.println("Pasando a ---> CALLING");
 		WhoIam = 1;
 		transportLayer.sendToProxy(inviteMessage);
 	}
@@ -277,6 +300,8 @@ public class UaTransactionLayer {
 	public void send200(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
 		state=TERM;
+		System.out.println("Pasando a ---> TERMINATED");
+
 	}
 	
 	public void send200_direct(SIPMessage sipMessage, String addr, int port) throws IOException {
@@ -286,10 +311,13 @@ public class UaTransactionLayer {
 	public void send408(SIPMessage sipMessage) throws IOException {
 		transportLayer.sendToProxy(sipMessage);
 		state=COMPL;
+		System.out.println("Pasando a ---> COMPLETED");
+
 	}
 	
 	public void send486(SIPMessage sipMessage) throws IOException {
 		state=COMPL;
+		System.out.println("Pasando a ---> COMPLETED");
 		transportLayer.sendToProxy(sipMessage);
         TimerTask task486 = new TimerTask() {
             public void run() {
@@ -317,6 +345,7 @@ public class UaTransactionLayer {
 	public void sendBYE(SIPMessage sipMessage, String addr, int port) throws IOException {
 		transportLayer.send(sipMessage, addr , port);
 		state = IDLE;
+		System.out.println("Pasando a ---> IDLE");
 	}
 	
 	public int getState() {

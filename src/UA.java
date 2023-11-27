@@ -13,7 +13,7 @@ import ua.UaUserLayer;
 public class UA {
 	public static void main(String[] args) throws Exception {
 		System.out.println("UA launching with args: " + String.join(", ", args));
-		
+
 		int listenPort = Integer.parseInt(args[1]);
 		String proxyAddress = args[2];
 		int proxyPort = Integer.parseInt(args[3]);

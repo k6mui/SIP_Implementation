@@ -57,7 +57,9 @@ public class ProxyTransactionLayer {
 			switch (stateA) {
 			case IDLE:
 				if(userLayer.onInviteReceived(inviteMessage))
-					{stateA = PROCC;}
+					{stateA = PROCC;
+					System.out.println("Pasando a ---> PROCCEDING" );
+}
 				break;
 			default:
 				ServiceUnavailableMessage serviceUnav = new ServiceUnavailableMessage();
@@ -94,9 +96,11 @@ public class ProxyTransactionLayer {
 			case CALL:
 				userLayer.onRingingMessage(ringingMessage);
 				stateB = PROCC;
+				System.out.println("Pasando a estado ---> PROCCEDING");
 				break;
 			case PROCC:
 				stateB = PROCC;
+				System.out.println("Pasando a estado ---> PROCCEDING");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -108,10 +112,12 @@ public class ProxyTransactionLayer {
 			case CALL:
 				userLayer.onOkMessage(okMessage);
 				stateB = IDLE;
+				System.out.println("Pasando a estado ---> IDLE");
 				break;
 			case PROCC:
 				userLayer.onOkMessage(okMessage);
 				stateB = IDLE;
+				System.out.println("Pasando a estado ---> IDLE");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -120,6 +126,7 @@ public class ProxyTransactionLayer {
 			switch (stateA) {
 			case PROCC:
 				stateA = IDLE;
+				System.out.println("Pasando a ---> IDLE");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -132,9 +139,11 @@ public class ProxyTransactionLayer {
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK(busyHereMessage);
 				stateB = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask taskB = new TimerTask() {
 		            public void run() {
-		                stateB= IDLE;;
+		                stateB= IDLE;
+						System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(taskB, 1000); //
@@ -143,9 +152,11 @@ public class ProxyTransactionLayer {
 				userLayer.onBusy(busyHereMessage);
 				userLayer.commandACK(busyHereMessage);
 				stateB = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask taskB_2 = new TimerTask() {
 		            public void run() {
-		                stateB= IDLE;;
+		                stateB= IDLE;
+						System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(taskB_2, 1000); //
@@ -153,6 +164,7 @@ public class ProxyTransactionLayer {
 			case COMPL:
 				userLayer.commandACK(busyHereMessage);
 				stateB = COMPL; 
+				System.out.println("Pasando a ---> COMPLETED");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -161,6 +173,7 @@ public class ProxyTransactionLayer {
 			switch (stateA) {
 			case PROCC:
 				stateA = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task486 = new TimerTask() {
 		            public void run() {
 		                // Place the action you want to execute after 2 seconds here.
@@ -191,6 +204,7 @@ public class ProxyTransactionLayer {
 				timer486.cancel();
 				System.out.println("ACK Received from " + ackMessage.getFromName());
 				stateA = IDLE;
+				System.out.println("Pasando a ---> IDLE");
 				break;
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -204,9 +218,11 @@ public class ProxyTransactionLayer {
 				userLayer.onRequest(requestMessage);
 				userLayer.commandACK_408(requestMessage);
 				stateB = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task408 = new TimerTask() {
 		            public void run() {
-		                stateB= IDLE;;
+		                stateB= IDLE;
+						System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task408, 1000); //
@@ -215,9 +231,11 @@ public class ProxyTransactionLayer {
 				userLayer.onRequest(requestMessage);
 				userLayer.commandACK_408(requestMessage);
 				stateB = COMPL;
+				System.out.println("Pasando a ---> COMPLETED");
 				TimerTask task408_2 = new TimerTask() {
 		            public void run() {
-		                stateB= IDLE;;
+		                stateB= IDLE;
+						System.out.println("Pasando a ---> IDLE");
 		            }
 		        };
 		        timerB.schedule(task408_2, 1000); //
@@ -225,6 +243,7 @@ public class ProxyTransactionLayer {
 			case COMPL:
 				userLayer.commandACK_408(requestMessage);
 				stateB = COMPL; 
+				System.out.println("Pasando a ---> COMPLETED");
 				break;
 				
 			default:
@@ -243,6 +262,7 @@ public class ProxyTransactionLayer {
 	public void sendInvite(InviteMessage inviteMessage, String address, int port) throws IOException {
 		transportLayer.send(inviteMessage, address, port);
 		stateB = CALL;
+		System.out.println("Pasando a ---> CALLING");
 	}
 	
 

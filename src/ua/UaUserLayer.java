@@ -210,7 +210,7 @@ public class UaUserLayer {
 	}
 	
 	public void onNFReceived(NotFoundMessage messageNotFound) throws IOException {
-		System.out.println("Received 404 Not Found ");
+		System.err.println("Received 404 Not Found ");
 		
 		if (this.debug) {
 			System.out.println(messageNotFound.toStringMessage());
@@ -233,7 +233,7 @@ public class UaUserLayer {
 	}
 	
 	public void onBusy(BusyHereMessage busyHereMessage) throws IOException {
-		System.out.println(busyHereMessage.getToName() + " esta buuuuusy :(  (486 Busy Here)" );
+		System.err.println(busyHereMessage.getToName() + " esta buuuuusy :(  (486 Busy Here)" );
 		
 		if (this.debug) {
 			System.out.println(busyHereMessage.toStringMessage());
