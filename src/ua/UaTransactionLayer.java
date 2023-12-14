@@ -348,6 +348,12 @@ public class UaTransactionLayer {
 		System.out.println("Pasando a ---> IDLE");
 	}
 	
+	public void sendBYE_loose(SIPMessage sipMessage) throws IOException {
+		transportLayer.sendToProxy(sipMessage);
+		state = IDLE;
+		System.out.println("Pasando a ---> IDLE");
+	}
+	
 	public int getState() {
 		return state;
 	}
