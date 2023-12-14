@@ -53,6 +53,7 @@ public class ProxyUserLayer {
 	public boolean onInviteReceived(InviteMessage inviteMessage) throws IOException {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
 		ArrayList<String> vias = inviteMessage.getVias();
+		ArrayList<String> vias_100 = inviteMessage.getVias();
 		String origin = vias.get(0);
 		String[] originParts = origin.split(":");
 		String originAddress = originParts[0];
@@ -61,6 +62,7 @@ public class ProxyUserLayer {
 		int destPort = 0;
 		Date timeNow = new Date();
 		String uri = inviteMessage.getToUri();
+	
 
 		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 
@@ -72,7 +74,7 @@ public class ProxyUserLayer {
 		message100.setToName(inviteMessage.getToName());
 		message100.setToUri(inviteMessage.getToUri());
 		message100.setContentLength(0);
-		message100.setVias(vias);
+		message100.setVias(vias_100);
 
 		notFoundMessage.setCallId(inviteMessage.getCallId());
 		notFoundMessage.setcSeqNumber(inviteMessage.getcSeqNumber());

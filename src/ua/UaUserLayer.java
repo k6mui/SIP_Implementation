@@ -297,7 +297,7 @@ public class UaUserLayer {
 	}
 
 	private void promptIdle() {
-		System.out.println("INVITE xxx");
+		System.out.println("INVITE xxx@SMA");
 	}
 
 	/* TO DO LA PARTE DE AÑADIR MAS MENSAJES AL LEER */
