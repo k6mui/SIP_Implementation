@@ -63,7 +63,8 @@ public class ProxyUserLayer {
 		Date timeNow = new Date();
 		String uri = inviteMessage.getToUri();
 	
-
+		vias_100.remove(1);
+		
 		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
 
 		message100.setCallId(inviteMessage.getCallId());
