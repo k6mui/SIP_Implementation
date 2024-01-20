@@ -34,7 +34,7 @@ public class UaTransactionLayer {
 	
 	Timer timer486 = new Timer();
 	Timer timerB = new Timer();
-	
+
 	
 	public UaTransactionLayer(int listenPort, String proxyAddress, int proxyPort, UaUserLayer userLayer)
 			throws SocketException {
@@ -47,6 +47,8 @@ public class UaTransactionLayer {
 			InviteMessage inviteMessage = (InviteMessage) sipMessage;
 			switch (state) {
 			case IDLE:
+				timer486 = new Timer();
+				timerB = new Timer();
 				userLayer.onInviteReceived(inviteMessage);
 				WhoIam = 2;
 				state = PROCC;
@@ -56,7 +58,7 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else if (sipMessage instanceof OKMessage){ /*%%%%%%%%%%%%%%%%%To do%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+		} else if (sipMessage instanceof OKMessage){ 
 			OKMessage okMessage = (OKMessage) sipMessage;
 			switch (state) {
 			case IDLE:
@@ -79,7 +81,6 @@ public class UaTransactionLayer {
 			case TERM:
 				System.out.println("FIN DE LLAMADA");
 				break;
-// *Creo que habría que poner un estado terminated ya que no es lo mismo estar en llamada que haber colgado después del bye (ahi si que es IDLE)*
 
 			default:
 				System.err.println("Unexpected message, throwing away");
@@ -133,7 +134,7 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 			}
-		} else if (sipMessage instanceof RingingMessage) { /*%%%%%%%%%%%%%%%%%To do%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+		} else if (sipMessage instanceof RingingMessage) { 
 			RingingMessage ringingMessage = (RingingMessage) sipMessage;
 			switch (state) {
 			case CALL:
@@ -149,7 +150,7 @@ public class UaTransactionLayer {
 				System.err.println("Unexpected message, throwing away");
 				break;
 		}
-		} else if (sipMessage instanceof BusyHereMessage){ /* to do -------------------*/
+		} else if (sipMessage instanceof BusyHereMessage){ 
 			BusyHereMessage busyHereMessage = (BusyHereMessage) sipMessage;
 			switch (state) {
 			case PROCC:
@@ -188,7 +189,7 @@ public class UaTransactionLayer {
 				break;
 			}
 			}
-		else if (sipMessage instanceof RequestTimeoutMessage){ /* to do -------------------*/
+		else if (sipMessage instanceof RequestTimeoutMessage){ 
 			RequestTimeoutMessage requestM = (RequestTimeoutMessage) sipMessage;
 			switch (state) {
 			case PROCC:
@@ -235,8 +236,8 @@ public class UaTransactionLayer {
 				case COMPL:
 					timer486.cancel();
 					System.out.println("ACK received from Proxy");
-					state = TERM;
-					System.out.println("Pasando a ---> TERMINATED");
+					state = IDLE;
+					System.out.println("Pasando a ---> IDLE");
 					break;
 				case TERM:
 					System.out.println("ACK received from " + ackMessage.getFromName());
@@ -261,7 +262,7 @@ public class UaTransactionLayer {
 					break;
 				}
 		 }
-		 else if (sipMessage instanceof ServiceUnavailableMessage){ /* to do -------------------*/
+		 else if (sipMessage instanceof ServiceUnavailableMessage){ 
 				switch (state) {
 				case CALL:
 					System.err.println("503 Service Unavailable");
@@ -288,7 +289,7 @@ public class UaTransactionLayer {
 		WhoIam = 1;
 		transportLayer.sendToProxy(inviteMessage);
 	}
-	/*DONE*/
+
 	public void register(RegisterMessage registerMessage) throws IOException {
 		transportLayer.sendToProxy(registerMessage);
 	}

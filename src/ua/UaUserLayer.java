@@ -36,7 +36,8 @@ public class UaUserLayer {
 
 	private UaTransactionLayer transactionLayer;
 
-	private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
+	// private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
+	private String myAddress = "163.117.172.173";
 	private int rtpPort;
 	private int listenPort;
 	private String callId;
@@ -51,14 +52,15 @@ public class UaUserLayer {
 	private int cSeq;
 	private int proxyPort;
 	private boolean looseRouting = false;
+	private String multicastAddress = "239.1.2.3";
 
 	private RingingMessage message180;
 	private OKMessage message200;
 	private BusyHereMessage message486;
 	private ByeMessage messageBYE;
 	private RequestTimeoutMessage message408;
-
 	Timer timer408 = new Timer();
+
 
 	private Process vitextClient = null;
 	private Process vitextServer = null;
@@ -92,8 +94,10 @@ public class UaUserLayer {
 	}
 
 	public void onInviteReceived(InviteMessage inviteMessage) throws IOException {
+		timer408 = new Timer();
+
 		System.out.println(inviteMessage.getFromName() + " is calling you");
-		// runVitextServer();
+		runVitextServer();
 		ArrayList<String> vias = inviteMessage.getVias();
 
 		String[] split = inviteMessage.getFromUri().split(":");
@@ -138,6 +142,8 @@ public class UaUserLayer {
 			looseRouting = true;
 
 		}
+		
+		runVitextServer();
 
 		message486.setCallId(inviteMessage.getCallId());
 		message486.setcSeqNumber(inviteMessage.getcSeqNumber());
@@ -248,7 +254,6 @@ public class UaUserLayer {
 			System.out.println(busyHereMessage.toStringMessage());
 		}
 	}
-	/* To Do */
 
 	public void startListeningNetwork() {
 		transactionLayer.startListeningNetwork();
@@ -300,7 +305,6 @@ public class UaUserLayer {
 		System.out.println("INVITE xxx@SMA");
 	}
 
-	/* TO DO LA PARTE DE AÑADIR MAS MENSAJES AL LEER */
 	private void command(String line) throws IOException {
 		if (line.startsWith("INVITE")) {
 			commandInvite(line);
@@ -318,8 +322,8 @@ public class UaUserLayer {
 	}
 
 	private void commandInvite(String line) throws IOException {
-		// stopVitextServer();
-		// stopVitextClient();
+		stopVitextServer();
+		stopVitextClient();
 
 		String[] args = line.split(" ");
 
@@ -327,12 +331,12 @@ public class UaUserLayer {
 
 		System.out.println("Inviting...");
 
-		// runVitextClient();
+		runVitextClient();
 
 		callId = UUID.randomUUID().toString();
 
 		SDPMessage sdpMessage = new SDPMessage();
-		sdpMessage.setIp(this.myAddress);
+		sdpMessage.setIp(multicastAddress);
 		sdpMessage.setPort(this.rtpPort);
 		sdpMessage.setOptions(RTPFLOWS);
 
@@ -357,7 +361,6 @@ public class UaUserLayer {
 		transactionLayer.call(inviteMessage);
 	}
 
-	/* DONE */
 	public void commandRegister(String line) throws IOException {
 
 		System.out.println("Registering...");
@@ -382,7 +385,6 @@ public class UaUserLayer {
 	}
 
 	private void command200(String line) throws IOException {
-		/* SEND 200 CREADO EN EL INVITERECEIVED */
 		transactionLayer.send200(message200);
 
 	}
@@ -392,6 +394,8 @@ public class UaUserLayer {
 	}
 
 	private void commandBYE(String line) throws IOException {
+		stopVitextServer();
+		stopVitextClient();
 		if (looseRouting) {
 			messageBYE.setRoute(proxyAdd + ":" + proxyPort);
 			transactionLayer.sendBYE_loose(messageBYE);
@@ -430,7 +434,7 @@ public class UaUserLayer {
 		ackMessage.setMaxForwards(70);
 		ackMessage.setFromName(extractName(uri));
 		ackMessage.setFromUri("sip:" + uri);
-		ackMessage.setcSeqNumber(String.valueOf(cSeq++)); // * ****************** PREGUNTAR MARIO*/
+		ackMessage.setcSeqNumber(String.valueOf(cSeq++)); 
 		ackMessage.setcSeqStr("ACK");
 		ackMessage.setContentLength(0);
 		ackMessage.setToUri("sip:" + this.uriDest);

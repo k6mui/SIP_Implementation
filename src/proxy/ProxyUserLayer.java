@@ -24,7 +24,6 @@ public class ProxyUserLayer {
 	private ProxyTransactionLayer transactionLayer;
 	private ArrayList<Usuario> registerList = new ArrayList<>();
 
-	/* TO DO CAMBIAR ESO */
 	private OKMessage okMessage;
 	private TryingMessage message100;
 	private NotFoundMessage notFoundMessage;
@@ -49,7 +48,6 @@ public class ProxyUserLayer {
 
 	}
 
-	/* to do */
 	public boolean onInviteReceived(InviteMessage inviteMessage) throws IOException {
 		System.out.println("Received INVITE from " + inviteMessage.getFromName());
 		ArrayList<String> vias = inviteMessage.getVias();
@@ -65,8 +63,9 @@ public class ProxyUserLayer {
 	
 		vias_100.add(vias.get(0));
 		
-		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
-
+		// String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
+		String myAddress = "163.117.172.173";
+		
 		message100.setCallId(inviteMessage.getCallId());
 		message100.setcSeqNumber(inviteMessage.getcSeqNumber());
 		message100.setcSeqStr(inviteMessage.getcSeqStr());
@@ -133,7 +132,6 @@ public class ProxyUserLayer {
 		return bothOK;
 	}
 
-	/* to do */
 	public void onRegisterReceived(RegisterMessage registerMessage) throws IOException {
 
 		String name = registerMessage.getFromName();
@@ -147,7 +145,6 @@ public class ProxyUserLayer {
 		String originAddress = originParts[0];
 		int originPort = Integer.parseInt(originParts[1]);
 
-		/* DONE */
 		okMessage.setCallId(registerMessage.getCallId());
 		okMessage.setcSeqNumber(registerMessage.getcSeqNumber());
 		okMessage.setcSeqStr(registerMessage.getcSeqStr());
@@ -385,7 +382,7 @@ public class ProxyUserLayer {
 		ackMessage.setMaxForwards(70);
 		ackMessage.setFromName(request.getFromName());
 		ackMessage.setFromUri(request.getFromUri());
-		ackMessage.setcSeqNumber(request.getcSeqNumber() + 1); // * ****************** PREGUNTAR MARIO*/
+		ackMessage.setcSeqNumber(request.getcSeqNumber() + 1); 
 		ackMessage.setcSeqStr("ACK");
 		ackMessage.setContentLength(0);
 		ackMessage.setToUri(request.getToUri());

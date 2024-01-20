@@ -1,7 +1,7 @@
 /*
- * Código de base para parsear mensajes SIP
+ * Cï¿½digo de base para parsear mensajes SIP
  * Puede ser adaptado, ampliado, modificado por el alumno
- * según sus necesidades para la práctica
+ * segï¿½n sus necesidades para la prï¿½ctica
  */
 package mensajesSIP;
 
@@ -75,7 +75,7 @@ public class SDPMessage {
     }
 
 /**
- * Convierte el mensaje en un String. Para ello concatena la información de las opciones c y m con la IP, puerto y opciones de los atributos de la clase.
+ * Convierte el mensaje en un String. Para ello concatena la informaciï¿½n de las opciones c y m con la IP, puerto y opciones de los atributos de la clase.
  * 
  * @return      el mensaje como String.
  */
@@ -85,7 +85,7 @@ public class SDPMessage {
         String a = "";
         
         sdp = "c=IN IP4 " + ip + "\n";
-        sdp += "m=audio " + port + " RTP/AVP";
+        sdp += "m=video " + port + " RTP/AVP";
         for (int i = 0; i < options.size(); i++) {
             sdp += " " + options.get(i);
             if (options.get(i) == 96) {
@@ -114,7 +114,7 @@ public class SDPMessage {
     }
 
     private void parseM(String line) throws SIPException {
-        Pattern pattern = Pattern.compile("m=audio (\\d+) RTP/AVP (96|97|98) ?(96|97|98)? ?(96|97|98)?");
+        Pattern pattern = Pattern.compile("m=video (\\d+) RTP/AVP (96|97|98) ?(96|97|98)? ?(96|97|98)?");
         
         //System.out.println(line);
         Matcher matcher = pattern.matcher(line);

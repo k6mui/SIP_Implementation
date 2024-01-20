@@ -17,6 +17,6 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="UA"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="sma"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="carlos@SMA 9200 127.0.0.1 5060 false 3600"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="carlos@SMA 9200 127.0.0.1 5060 false 12000"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="sma"/>
 </launchConfiguration>

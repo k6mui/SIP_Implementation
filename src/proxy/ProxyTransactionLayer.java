@@ -59,6 +59,8 @@ public class ProxyTransactionLayer {
 			InviteMessage inviteMessage = (InviteMessage) sipMessage;
 			switch (stateA) {
 			case IDLE:
+				timerB = new Timer();
+				timer486 = new Timer();
 				if (userLayer.onInviteReceived(inviteMessage)) {
 					stateA = PROCC;
 					System.out.println("Pasando a ---> PROCCEDING");
@@ -255,6 +257,7 @@ public class ProxyTransactionLayer {
 				TimerTask task408 = new TimerTask() {
 					public void run() {
 						stateB = IDLE;
+						stateA = IDLE;
 						System.out.println("Pasando a ---> IDLE");
 					}
 				};
@@ -268,6 +271,7 @@ public class ProxyTransactionLayer {
 				TimerTask task408_2 = new TimerTask() {
 					public void run() {
 						stateB = IDLE;
+						stateA = IDLE; 
 						System.out.println("Pasando a ---> IDLE");
 					}
 				};
