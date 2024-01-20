@@ -2,7 +2,7 @@
 
 This repository contains the code for implementing a SIP User Agent and Proxy to realize the following scenario:
 
-
+```
                        +----+
                        | UA |
                        |    |
@@ -24,7 +24,7 @@ This repository contains the code for implementing a SIP User Agent and Proxy to
 cube2214a|    |                            6)INVITE
       +----+                    carol@cube2214a.chicago.com
        carol
-       
+```
 In this scenario, registration and location services are implemented in the proxy to simplify development. The call scenario involves a single SIP proxy, supporting internal calls within a domain, and does not rely on DNS for proxy resolution. Additionally, simultaneous registration from two different terminals is not allowed, and registrations have a specified lifetime.
 
 ## Implementation Details:
