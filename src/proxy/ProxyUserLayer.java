@@ -63,8 +63,8 @@ public class ProxyUserLayer {
 	
 		vias_100.add(vias.get(0));
 		
-		// String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
-		String myAddress = "163.117.172.173";
+		String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
+		// String myAddress = "163.117.172.173";
 		
 		message100.setCallId(inviteMessage.getCallId());
 		message100.setcSeqNumber(inviteMessage.getcSeqNumber());
