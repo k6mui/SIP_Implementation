@@ -35,7 +35,8 @@ Debug mode is available, displaying detailed message traces.
 Usage:
 For User Agent (UA):
 
-`java UA <SIP-username> <UA-listening-port> <Proxy-IP> <Proxy-listening-port> <debug(true/false)> <registration-time>`
+`java UA <SIP-username> <UA-listening-port> <Proxy-IP> <Proxy-listening-port> <debug(true/false)> <registration-time>` 
+
 <SIP-username>: Format - username@domain.
 <UA-listening-port>: Listening port for UA.
 <Proxy-IP>: IP address of the SIP Proxy.
@@ -45,6 +46,7 @@ For User Agent (UA):
 For Proxy:
 
 `java Proxy <Proxy-listening-port> <loose-routing(true/false)> <debug(true/false)>`
+
 <Proxy-listening-port>: Listening port for the SIP Proxy.
 <loose-routing(true/false)>: Enable or disable loose routing.
 <debug(true/false)>: Enable or disable debug mode.
