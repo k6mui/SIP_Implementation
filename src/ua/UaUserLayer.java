@@ -36,8 +36,8 @@ public class UaUserLayer {
 
 	private UaTransactionLayer transactionLayer;
 
-	// private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
-	private String myAddress = "163.117.172.173";
+	private String myAddress = FindMyIPv4.findMyIPv4Address().getHostAddress();
+	// private String myAddress = "163.117.172.173";
 	private int rtpPort;
 	private int listenPort;
 	private String callId;
