@@ -33,23 +33,26 @@ Simplified response messages include: 100 Trying, 180 Ringing, 200 OK, 404 Not F
 The implementation is in Java, and the provided code includes base classes for both User Agent (UA) and Proxy.
 Debug mode is available, displaying detailed message traces.
 Usage:
+
 For User Agent (UA):
 
 `java UA <SIP-username> <UA-listening-port> <Proxy-IP> <Proxy-listening-port> <debug(true/false)> <registration-time>` 
 
-<SIP-username>: Format - username@domain.
-<UA-listening-port>: Listening port for UA.
-<Proxy-IP>: IP address of the SIP Proxy.
-<Proxy-listening-port>: Listening port of the SIP Proxy.
-<debug(true/false)>: Enable or disable debug mode.
-<registration-time>: Registration time in seconds.
+- **SIP-username**: Format - username@domain.
+- **UA-listening-port**: Listening port for UA.
+- **Proxy-IP**: IP address of the SIP Proxy.
+- **Proxy-listening-port**: Listening port of the SIP Proxy.
+- **Debug (true/false)**: Enable or disable debug mode.
+- **Registration-time**: Registration time in seconds.
+
+
 For Proxy:
 
 `java Proxy <Proxy-listening-port> <loose-routing(true/false)> <debug(true/false)>`
 
-<Proxy-listening-port>: Listening port for the SIP Proxy.
-<loose-routing(true/false)>: Enable or disable loose routing.
-<debug(true/false)>: Enable or disable debug mode.
+- **Proxy-listening-port**: Listening port for the SIP Proxy.
+- **Loose-routing (true/false)**: Enable or disable loose routing.
+- **Debug (true/false)**: Enable or disable debug mode.
 
 ## Notes:
 Default ports are used if not specified.
